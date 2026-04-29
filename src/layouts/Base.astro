@@ -111,6 +111,50 @@ const { title, description = "个人博客 — 文章、项目、设计、摄影
           window._vinylState.isPlaying = false;
           syncPlayBtn();
         });
+
+        ap.on("listswitch", function () {
+          swapRecord();
+        });
+      }
+
+      function swapRecord() {
+        var wrap = document.getElementById("vinyl-wrap");
+        if (!wrap) return;
+        var oldRecord = wrap.querySelector(".vinyl-record");
+        if (!oldRecord) return;
+
+        var newRecord = document.createElement("div");
+        newRecord.className = "vinyl-record";
+        newRecord.innerHTML =
+          '<div class="vinyl-grooves"></div>' +
+          '<div class="vinyl-label"><span class="vinyl-label-text" style="font-size:4.5rem;">♪</span></div>' +
+          '<div class="vinyl-highlight"></div>';
+        newRecord.style.top = "-400px";
+        newRecord.style.zIndex = "2";
+        newRecord.style.transition = "top 0.8s cubic-bezier(0.22,1,0.36,1), opacity 2s ease";
+
+        // Old record fades out in sync
+        oldRecord.style.transition = "opacity 0.8s cubic-bezier(0.22,1,0.36,1)";
+        oldRecord.style.opacity = "0";
+
+        var next = oldRecord.nextSibling;
+        if (next) { wrap.insertBefore(newRecord, next); }
+        else { wrap.appendChild(newRecord); }
+
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            newRecord.style.top = "0";
+          });
+        });
+
+        newRecord.addEventListener("transitionend", function handler(e) {
+          if (e.propertyName !== "top") return;
+          newRecord.removeEventListener("transitionend", handler);
+          oldRecord.remove();
+          newRecord.style.top = "";
+          newRecord.style.zIndex = "";
+          newRecord.style.transition = "";
+        });
       }
 
       function syncPlayBtn() {
