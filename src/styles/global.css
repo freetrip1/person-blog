@@ -409,17 +409,17 @@ small {
 
 .vinyl-wrap {
   position: fixed;
-  top: -160px;
+  top: -210px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 100;
-  width: 340px;
-  height: 300px;
+  width: 440px;
+  height: 400px;
 }
 
 .vinyl-record {
-  width: 300px;
-  height: 300px;
+  width: 400px;
+  height: 400px;
   border-radius: 50%;
   position: absolute;
   top: 0;
@@ -506,7 +506,7 @@ small {
 
 .vinyl-controls {
   position: absolute;
-  bottom: 15px;
+  bottom: 65px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
