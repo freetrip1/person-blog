@@ -2,6 +2,11 @@
 import Base from "../layouts/Base.astro";
 import ThemeToggle from "../components/ThemeToggle.astro";
 import BottomNav from "../components/BottomNav.astro";
+import Giscus from "../components/Giscus.astro";
+import links from "../data/links.json";
+
+const activeLinks = links.filter((l) => l.status === "active");
+const invalidLinks = links.filter((l) => l.status === "invalid");
 ---
 
 <Base title="友链" description="Freetrip 的友情链接">
@@ -15,12 +20,47 @@ import BottomNav from "../components/BottomNav.astro";
     <p class="subtitle">互联网上的朋友们</p>
 
     <div class="friends-list">
-      <a href="#" target="_blank" rel="noopener" class="friend-card">
-        <span class="friend-name">待添加</span>
-        <span class="friend-desc">在这里添加你的朋友</span>
-        <span class="friend-arrow">→</span>
-      </a>
+      {activeLinks.length === 0 && (
+        <a href="#" class="friend-card">
+          <span class="friend-name">待添加</span>
+          <span class="friend-desc">在这里添加你的朋友</span>
+          <span class="friend-arrow">→</span>
+        </a>
+      )}
+      {activeLinks.map((link) => (
+        <a href={link.url} target="_blank" rel="noopener" class="friend-card">
+          <span class="friend-name">{link.name}</span>
+          <span class="friend-desc">{link.desc}</span>
+          <span class="friend-arrow">→</span>
+        </a>
+      ))}
     </div>
+
+    {invalidLinks.length > 0 && (
+      <div class="lost-section">
+        <h2>失联</h2>
+        <div class="friends-list">
+          {invalidLinks.map((link) => (
+            <div class="friend-card lost">
+              <span class="friend-name">{link.name}</span>
+              <span class="friend-desc">链接已断开</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+
+    <div class="apply-section">
+      <h2>申请友链</h2>
+      <p class="apply-hint">在下方评论区留言，格式如下：</p>
+      <div class="apply-format">
+        <p>名称：你的博客名</p>
+        <p>地址：https://your-site.com</p>
+        <p>描述：一句话介绍</p>
+      </div>
+    </div>
+
+    <Giscus />
 
     <BottomNav />
   </article>
@@ -73,5 +113,59 @@ import BottomNav from "../components/BottomNav.astro";
 
   .friend-card:hover .friend-arrow {
     transform: translateX(4px);
+  }
+
+  .apply-section {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .apply-section h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .apply-hint {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  .apply-format {
+    padding: 1rem 1.2rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  .apply-format p {
+    margin: 0;
+  }
+
+  .lost-section {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px dashed var(--border);
+  }
+
+  .lost-section h2 {
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  .friend-card.lost {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .friend-card.lost .friend-name {
+    text-decoration: line-through;
   }
 </style>

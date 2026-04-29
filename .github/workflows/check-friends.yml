@@ -1,0 +1,28 @@
+name: 友链双向检测
+
+on:
+  schedule:
+    # 每天北京时间凌晨 3 点 (UTC 19:00)
+    - cron: "0 19 * * *"
+  workflow_dispatch:
+
+jobs:
+  check-links:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: 运行检测脚本
+        run: node scripts/check-links.js
+
+      - name: 提交变更
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: 自动更新友链状态"
+          file_pattern: src/data/links.json
