@@ -92,6 +92,11 @@ const { title, description = "个人博客 — 文章、项目、设计、摄影
 
         window._vinylState.ap = ap;
 
+        // Force sync volume on first play
+        ap.on("canplay", function () {
+          ap.volume(window._vinylState.volume / 100);
+        }, { once: true });
+
         ap.on("play", function () {
           window._vinylState.isPlaying = true;
           syncPlayBtn();
@@ -170,12 +175,21 @@ const { title, description = "个人博客 — 文章、项目、设计、摄影
         }
       });
 
-      // After page swap, sync play button & volume slider
+      // After page swap, sync theme instantly, then sync player controls
       document.addEventListener("astro:after-swap", function () {
+        var t = localStorage.getItem("theme");
+        if (t === "dark" || (!t && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        } else {
+          document.documentElement.removeAttribute("data-theme");
+        }
         setTimeout(function () {
           syncPlayBtn();
+          var ap = window._vinylState.ap;
+          var vol = window._vinylState.volume;
+          if (ap) ap.volume(vol / 100);
           var slider = document.getElementById("vc-vol-slider");
-          if (slider) slider.value = window._vinylState.volume;
+          if (slider) slider.value = vol;
         }, 50);
       });
     })();
