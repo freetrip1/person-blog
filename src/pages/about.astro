@@ -1,0 +1,26 @@
+---
+import Base from "../layouts/Base.astro";
+import ThemeToggle from "../components/ThemeToggle.astro";
+import BottomNav from "../components/BottomNav.astro";
+---
+
+<Base title="关于" description="关于 Freetrip">
+  <article class="content-page">
+    <div class="page-top">
+      <a href="/" class="back-link">← 返回</a>
+      <ThemeToggle />
+    </div>
+
+    <h1>关于</h1>
+    <p class="subtitle">一些关于我的事情</p>
+
+    <div class="prose">
+      <p>你好，我是 Freetrip。</p>
+      <p>一个对设计、代码和创作有持续热情的人。我相信好的设计是克制的，好的代码是简洁的，好的内容是诚实的。</p>
+      <p>这个网站是我的数字花园，用来记录想法、展示作品、归档记忆。它采用极简的编辑风格设计，像一本翻开的书——安静，但每一页都有分量。</p>
+      <p>如果你有任何想法或合作意向，欢迎通过邮件联系我。</p>
+    </div>
+
+    <BottomNav />
+  </article>
+</Base>

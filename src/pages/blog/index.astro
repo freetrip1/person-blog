@@ -1,0 +1,41 @@
+---
+import Base from "../../layouts/Base.astro";
+import ThemeToggle from "../../components/ThemeToggle.astro";
+import BottomNav from "../../components/BottomNav.astro";
+import { getCollection } from "astro:content";
+
+const posts = (await getCollection("blog")).sort(
+  (a, b) => (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0)
+);
+---
+
+<Base title="想法" description="Freetrip 的博客文章">
+  <article class="content-page">
+    <div class="page-top">
+      <a href="/" class="back-link">← 返回</a>
+      <ThemeToggle />
+    </div>
+
+    <h1>想法</h1>
+    <p class="subtitle">文章与笔记</p>
+
+    <ul class="archive-list">
+      {posts.map((post) => (
+        <li>
+          <a href={`/blog/${post.id}`} class="archive-item">
+            <span class="archive-date">
+              {post.data.date?.toLocaleDateString("zh-CN", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+              })}
+            </span>
+            <span class="archive-title">{post.data.title}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    <BottomNav />
+  </article>
+</Base>

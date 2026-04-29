@@ -1,0 +1,192 @@
+---
+import VinylPlayer from "../components/VinylPlayer.astro";
+import { ClientRouter } from "astro:transitions";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "个人博客 — 文章、项目、设计、摄影" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css" />
+    <title>{title}</title>
+    <ClientRouter />
+    <script is:inline>
+      (function () {
+        var t = localStorage.getItem("theme");
+        if (t === "dark" || (!t && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      })();
+    </script>
+    <script is:inline src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+    <script is:inline>
+    (function () {
+      if (window._vinylInit) return;
+      window._vinylInit = true;
+      window._vinylState = { isPlaying: false, ap: null, volume: 70 };
+
+      // Create APlayer container on <html> so it survives page swaps
+      var apDiv = document.createElement("div");
+      apDiv.id = "vinyl-aplayer";
+      apDiv.style.cssText = "position:fixed!important;bottom:-9999px!important;left:-9999px!important;width:0!important;height:0!important;overflow:hidden!important;opacity:0!important;pointer-events:none!important;z-index:-999!important;";
+      document.documentElement.appendChild(apDiv);
+
+      var songIds = [2151956989, 1831469100, 31649312, 2692441576, 1903408778, 1383927071, 26441613, 403180, 22687828, 1803545365, 529668945, 1880714348];
+      var endpoints = [
+        "https://api.injahow.cn/meting/",
+        "https://meting.qjqq.cn/",
+        "https://api.i-meto.com/meting/"
+      ];
+
+      function fetchSong(id) {
+        var i = 0;
+        function tryNext() {
+          if (i >= endpoints.length) return Promise.resolve(null);
+          var url = endpoints[i] + "?type=song&id=" + id + "&server=netease";
+          i++;
+          return fetch(url).then(function (r) { return r.json(); }).then(function (data) {
+            if (!data || data.length === 0 || !data[0].url) return tryNext();
+            return data[0];
+          }).catch(function () { return tryNext(); });
+        }
+        return tryNext();
+      }
+
+      function fetchAllSongs() {
+        Promise.all(songIds.map(fetchSong))
+          .then(function (songs) {
+            var valid = songs.filter(Boolean);
+            if (valid.length === 0) {
+              console.error("VinylPlayer: No songs could be loaded");
+              return;
+            }
+            initPlayer(valid);
+          });
+      }
+
+      function initPlayer(audioData) {
+        var ap = new APlayer({
+          container: apDiv,
+          audio: audioData,
+          autoplay: false,
+          theme: "#8b7355",
+          loop: "all",
+          volume: 0.7
+        });
+
+        window._vinylState.ap = ap;
+
+        ap.on("play", function () {
+          window._vinylState.isPlaying = true;
+          syncPlayBtn();
+        });
+
+        ap.on("pause", function () {
+          window._vinylState.isPlaying = false;
+          syncPlayBtn();
+        });
+      }
+
+      function syncPlayBtn() {
+        var btn = document.getElementById("vc-play");
+        if (!btn) return;
+        if (window._vinylState.isPlaying) {
+          btn.classList.add("is-playing");
+        } else {
+          btn.classList.remove("is-playing");
+        }
+      }
+
+      function waitForAPlayer() {
+        if (typeof APlayer !== "undefined") {
+          fetchAllSongs();
+        } else {
+          setTimeout(waitForAPlayer, 200);
+        }
+      }
+      waitForAPlayer();
+
+      // Delegated click — survives page swaps
+      document.addEventListener("click", function (e) {
+        var ap = window._vinylState.ap;
+        if (!ap) return;
+
+        // Control bar buttons
+        var prevBtn = document.getElementById("vc-prev");
+        var playBtn = document.getElementById("vc-play");
+        var nextBtn = document.getElementById("vc-next");
+        var volBtn = document.getElementById("vc-vol-icon");
+
+        if (prevBtn && prevBtn.contains(e.target)) { ap.skipBack(); return; }
+        if (nextBtn && nextBtn.contains(e.target)) { ap.skipForward(); return; }
+        if (playBtn && playBtn.contains(e.target)) {
+          if (window._vinylState.isPlaying) { ap.pause(); } else { ap.play(); }
+          return;
+        }
+        if (volBtn && volBtn.contains(e.target)) {
+          var slider = document.getElementById("vc-vol-slider");
+          if (slider) {
+            var cur = parseFloat(slider.value);
+            slider.value = cur > 0 ? 0 : 70;
+            ap.volume(cur > 0 ? 0 : 0.7);
+          }
+          return;
+        }
+
+        // Click inside controls — don't fall through to vinyl-wrap toggle
+        var controls = document.getElementById("vinyl-controls");
+        if (controls && controls.contains(e.target)) return;
+
+        // Click on vinyl-wrap (not on control buttons) to toggle play
+        var wrap = document.getElementById("vinyl-wrap");
+        if (wrap && wrap.contains(e.target)) {
+          if (window._vinylState.isPlaying) { ap.pause(); } else { ap.play(); }
+        }
+      });
+
+      // Volume slider
+      document.addEventListener("input", function (e) {
+        if (e.target.id === "vc-vol-slider") {
+          var ap = window._vinylState.ap;
+          var vol = parseInt(e.target.value);
+          window._vinylState.volume = vol;
+          if (ap) ap.volume(vol / 100);
+        }
+      });
+
+      // After page swap, sync play button & volume slider
+      document.addEventListener("astro:after-swap", function () {
+        setTimeout(function () {
+          syncPlayBtn();
+          var slider = document.getElementById("vc-vol-slider");
+          if (slider) slider.value = window._vinylState.volume;
+        }, 50);
+      });
+    })();
+    </script>
+  </head>
+  <body>
+    <VinylPlayer />
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  @import "../styles/global.css";
+</style>

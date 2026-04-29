@@ -1,0 +1,89 @@
+---
+import Base from "../layouts/Base.astro";
+import ThemeToggle from "../components/ThemeToggle.astro";
+import BottomNav from "../components/BottomNav.astro";
+import { getCollection } from "astro:content";
+
+const projects = await getCollection("projects");
+---
+
+<Base title="作品集" description="Freetrip 的项目与作品">
+  <article class="content-page">
+    <div class="page-top">
+      <a href="/" class="back-link">← 返回</a>
+      <ThemeToggle />
+    </div>
+
+    <h1>作品集</h1>
+    <p class="subtitle">精选项目与作品</p>
+
+    <div class="work-grid">
+      {projects.map((project) => (
+        <a href={project.data.url || "#"} class="work-card">
+          <h3>{project.data.title}</h3>
+          <p>{project.data.description}</p>
+          {(project.data.tags || []).length > 0 && (
+            <div class="work-tags">
+              {(project.data.tags || []).map((tag: string) => (
+                <span class="tag">{tag}</span>
+              ))}
+            </div>
+          )}
+        </a>
+      ))}
+    </div>
+
+    <BottomNav />
+  </article>
+</Base>
+
+<style>
+  .work-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+    margin-top: 2rem;
+    text-align: left;
+  }
+
+  .work-card {
+    display: flex;
+    flex-direction: column;
+    padding: 1.4rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--card-bg);
+    transition: border-color 0.2s ease, transform 0.25s ease;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .work-card:hover {
+    border-color: var(--dots);
+    transform: translateY(-2px);
+  }
+
+  .work-card h3 {
+    margin-bottom: 0.4em;
+  }
+
+  .work-card p {
+    font-size: 0.95rem;
+    color: var(--muted);
+    margin-bottom: 0.8em;
+  }
+
+  .work-tags {
+    display: flex;
+    gap: 0.5em;
+    margin-top: auto;
+  }
+
+  .work-tags .tag {
+    font-size: 0.75rem;
+    color: var(--accent);
+    border: 1px solid var(--border);
+    padding: 0.1em 0.5em;
+    border-radius: 3px;
+  }
+</style>

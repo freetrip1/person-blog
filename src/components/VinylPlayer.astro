@@ -1,0 +1,32 @@
+---
+// VinylPlayer — 纯 HTML，样式在 global.css
+---
+
+<div class="vinyl-wrap" id="vinyl-wrap" style="position:fixed;top:-160px;left:50%;transform:translateX(-50%);z-index:10000;width:340px;height:300px;">
+  <div class="vinyl-record" id="vinyl-record">
+    <div class="vinyl-grooves"></div>
+    <div class="vinyl-label">
+      <span class="vinyl-label-text">♪</span>
+    </div>
+    <div class="vinyl-highlight"></div>
+  </div>
+
+  <div class="vinyl-controls" id="vinyl-controls">
+    <button class="vc-btn" id="vc-prev" aria-label="上一首">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+    </button>
+    <button class="vc-btn" id="vc-play" aria-label="播放">
+      <svg class="vc-icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      <svg class="vc-icon-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+    </button>
+    <button class="vc-btn" id="vc-next" aria-label="下一首">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+    </button>
+    <div class="vc-vol-wrap">
+      <button class="vc-btn vc-vol-btn" id="vc-vol-icon" aria-label="音量">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8.5v7a4.47 4.47 0 0 0 2.5-3.5z"/></svg>
+      </button>
+      <input type="range" class="vc-vol-slider" id="vc-vol-slider" min="0" max="100" value="70" />
+    </div>
+  </div>
+</div>

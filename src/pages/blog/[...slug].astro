@@ -1,0 +1,35 @@
+---
+import Base from "../../layouts/Base.astro";
+import ThemeToggle from "../../components/ThemeToggle.astro";
+import BottomNav from "../../components/BottomNav.astro";
+import { getCollection, render } from "astro:content";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog");
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<Base title={post.data.title} description={post.data.description}>
+  <article class="content-page">
+    <div class="page-top">
+      <a href="/blog" class="back-link">← 返回文章列表</a>
+      <ThemeToggle />
+    </div>
+
+    <h1>{post.data.title}</h1>
+    <p class="subtitle">{post.data.date?.toLocaleDateString("zh-CN")} {post.data.tags?.map((t: string) => `#${t}`).join(" ")}</p>
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    <BottomNav />
+  </article>
+</Base>

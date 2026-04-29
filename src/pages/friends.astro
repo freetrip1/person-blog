@@ -1,0 +1,77 @@
+---
+import Base from "../layouts/Base.astro";
+import ThemeToggle from "../components/ThemeToggle.astro";
+import BottomNav from "../components/BottomNav.astro";
+---
+
+<Base title="友链" description="Freetrip 的友情链接">
+  <article class="content-page">
+    <div class="page-top">
+      <a href="/" class="back-link">← 返回</a>
+      <ThemeToggle />
+    </div>
+
+    <h1>友链</h1>
+    <p class="subtitle">互联网上的朋友们</p>
+
+    <div class="friends-list">
+      <a href="#" target="_blank" rel="noopener" class="friend-card">
+        <span class="friend-name">待添加</span>
+        <span class="friend-desc">在这里添加你的朋友</span>
+        <span class="friend-arrow">→</span>
+      </a>
+    </div>
+
+    <BottomNav />
+  </article>
+</Base>
+
+<style>
+  .friends-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+    margin-top: 2rem;
+    text-align: left;
+  }
+
+  .friend-card {
+    display: flex;
+    align-items: center;
+    padding: 1.2rem 1.4rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--card-bg);
+    gap: 1em;
+    transition: border-color 0.2s ease, transform 0.25s ease;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .friend-card:hover {
+    border-color: var(--dots);
+    transform: translateY(-2px);
+  }
+
+  .friend-name {
+    font-size: 1.05rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .friend-desc {
+    flex: 1;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .friend-arrow {
+    font-size: 0.9em;
+    color: var(--muted);
+    transition: transform 0.2s ease;
+  }
+
+  .friend-card:hover .friend-arrow {
+    transform: translateX(4px);
+  }
+</style>

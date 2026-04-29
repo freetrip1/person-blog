@@ -1,0 +1,83 @@
+---
+import Base from "../layouts/Base.astro";
+import TableOfContents from "../components/TableOfContents.astro";
+import ThemeToggle from "../components/ThemeToggle.astro";
+---
+
+<Base title="首页">
+  <main class="home">
+    <header class="home-header">
+      <h1 class="name">Freetrip</h1>
+      <p class="identity">开发者 / 创作者</p>
+    </header>
+
+    <section class="home-nav">
+      <TableOfContents />
+    </section>
+
+    <footer class="home-footer">
+      <span class="volume-wrap">
+        <span class="volume-label">第一卷</span>
+        <ThemeToggle />
+      </span>
+    </footer>
+  </main>
+</Base>
+
+<style>
+  .home {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 3rem 2rem;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .home-header {
+    margin-bottom: 3rem;
+    text-align: center;
+  }
+
+  .name {
+    font-family: "Noto Serif SC", serif;
+    margin-bottom: 0.1em;
+  }
+
+  .identity {
+    font-size: 1.1rem;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  .home-nav {
+    flex: 0;
+  }
+
+  .home-footer {
+    margin-top: 4rem;
+    display: flex;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--muted);
+  }
+
+  .volume-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6em;
+  }
+
+  .volume-label {
+    font-family: "Noto Serif SC", serif;
+    letter-spacing: 0.15em;
+    color: #2c2c2c;
+    font-weight: 600;
+  }
+
+  :global([data-theme="dark"]) .volume-label {
+    color: #ffffff;
+  }
+</style>

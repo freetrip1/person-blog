@@ -1,0 +1,30 @@
+---
+interface NavItem {
+  label: string;
+  href: string;
+  page: string;
+}
+
+const items: NavItem[] = [
+  { label: "关于", href: "/about", page: "i" },
+  { label: "作品集", href: "/work", page: "ii" },
+  { label: "想法", href: "/blog", page: "iii" },
+  { label: "漫游", href: "/wander", page: "iv" },
+  { label: "档案", href: "/archive", page: "v" },
+  { label: "友链", href: "/friends", page: "vi" },
+];
+---
+
+<nav class="toc">
+  <ul class="toc-list">
+    {items.map((item) => (
+      <li>
+        <a href={item.href} class="toc-item">
+          <span class="toc-label">{item.label}</span>
+          <span class="toc-dots" />
+          <span class="toc-page">{item.page}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>
