@@ -1,0 +1,149 @@
+---
+import Base from "../layouts/Base.astro";
+import ThemeToggle from "../components/ThemeToggle.astro";
+---
+
+<Base title="页面遗失" description="这一页似乎被撕掉了">
+  <div class="nf-table">
+    <article class="nf-paper page-enter">
+      <svg class="nf-paper-shape" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <filter id="torn-edges" x="-8%" y="-8%" width="116%" height="116%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.014 0.026" numOctaves="4" seed="11" stitchTiles="stitch" />
+            <feDisplacementMap in="SourceGraphic" scale="38" />
+          </filter>
+        </defs>
+        <rect class="nf-paper-fill" x="7%" y="7%" width="86%" height="86%" filter="url(#torn-edges)" />
+      </svg>
+
+      <div class="nf-content">
+        <div class="nf-top">
+          <a href="/" class="back-link">← 返回目录</a>
+          <ThemeToggle />
+        </div>
+
+        <h1 class="nf-numeral">404</h1>
+        <p class="nf-message">这一页似乎被人轻轻撕走了。</p>
+        <p class="nf-aside">也许它从未存在，也许只是被夹在了别处。</p>
+
+        <p class="nf-tip">
+          要不要 <a href="/blog">随便翻一页</a>？
+        </p>
+      </div>
+    </article>
+  </div>
+</Base>
+
+<style>
+  :root {
+    --nf-table: #d4c9b0;
+    --nf-paper: #f7f2ea;
+  }
+
+  :global([data-theme="dark"]) {
+    --nf-table: #050403;
+    --nf-paper: #1a1815;
+  }
+
+  .nf-table {
+    min-height: 100vh;
+    background: var(--nf-table);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 1.5rem;
+  }
+
+  .nf-paper {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    min-height: 480px;
+    transform: rotate(-0.6deg);
+  }
+
+  .nf-paper-shape {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+    filter: drop-shadow(0 6px 28px rgba(0, 0, 0, 0.18));
+  }
+
+  .nf-paper-fill {
+    fill: var(--nf-paper);
+  }
+
+  .nf-content {
+    position: relative;
+    z-index: 1;
+    padding: 5rem 3rem 4rem;
+    text-align: center;
+  }
+
+  .nf-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2.5rem;
+    text-align: left;
+  }
+
+  .back-link {
+    font-size: 0.9rem;
+    color: var(--muted);
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .back-link:hover {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .nf-numeral {
+    font-family: "Noto Serif SC", serif;
+    font-size: clamp(4.5rem, 13vw, 7rem);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 1.6rem;
+    user-select: none;
+  }
+
+  .nf-message {
+    font-family: "Noto Serif SC", serif;
+    font-size: 1.1rem;
+    color: var(--fg);
+    margin-bottom: 0.4em;
+  }
+
+  .nf-aside {
+    font-size: 0.88rem;
+    color: var(--muted);
+    opacity: 0.55;
+    font-style: italic;
+    margin-bottom: 0;
+  }
+
+  .nf-tip {
+    font-size: 0.95rem;
+    color: var(--muted);
+    opacity: 0.7;
+    margin-top: 3rem;
+  }
+
+  .nf-tip a {
+    border-bottom: 1px solid var(--dots);
+    padding-bottom: 1px;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .nf-tip a:hover {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+</style>

@@ -1,3 +1,9 @@
+/* ── Vinyl Hover ↔ Name Sync ── */
+html:has(.vinyl-wrap:hover) .name {
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+
 /* ── Entrance Animation ── */
 @keyframes fadeUp {
   from {
