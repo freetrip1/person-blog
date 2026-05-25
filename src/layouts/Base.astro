@@ -28,15 +28,24 @@ const { title, description = "个人博客 — 文章、项目、设计、摄影
     <ClientRouter />
     <script is:inline>
       (function () {
-        var t = localStorage.getItem("theme");
-        if (t === "dark" || t === "light") {
-          if (t === "dark") document.documentElement.setAttribute("data-theme", "dark");
-        } else {
+        function getDesiredTheme() {
+          var t = localStorage.getItem("theme");
+          if (t === "dark" || t === "light") return t;
           var h = new Date().getHours();
-          if (h < 6 || h >= 18) {
-            document.documentElement.setAttribute("data-theme", "dark");
-          }
+          return (h < 6 || h >= 18) ? "dark" : "light";
         }
+        // 首次加载：立刻打上属性，避免 FOUC
+        if (getDesiredTheme() === "dark") {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+        // ClientRouter 切页前：把主题预先写到新文档的 html 上，避免白闪
+        document.addEventListener("astro:before-swap", function (e) {
+          if (getDesiredTheme() === "dark") {
+            e.newDocument.documentElement.setAttribute("data-theme", "dark");
+          } else {
+            e.newDocument.documentElement.removeAttribute("data-theme");
+          }
+        });
       })();
     </script>
     <script is:inline src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>

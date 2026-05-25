@@ -59,8 +59,16 @@
     if (!btn) return;
     var current = document.documentElement.getAttribute("data-theme");
     var next = current === "dark" ? "light" : "dark";
-    document.documentElement.setAttribute("data-theme", next);
+    var root = document.documentElement;
+    root.classList.add("theme-switching");
+    root.setAttribute("data-theme", next);
     localStorage.setItem("theme", next);
+    // 等浏览器画一帧后再移除，确保切色那一刻无 transition
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        root.classList.remove("theme-switching");
+      });
+    });
   });
 })();
 </script>

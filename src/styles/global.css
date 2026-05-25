@@ -4,6 +4,21 @@ html:has(.vinyl-wrap:hover) .name {
   color: var(--accent);
 }
 
+/* ── 关掉 ClientRouter 默认 cross-fade，避免黑夜模式下闪屏 ── */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* ── 切主题时短暂禁用所有 transition，避免颜色渐变穿过灰色 ── */
+.theme-switching,
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+  transition: none !important;
+}
+
 /* ── Entrance Animation ── */
 @keyframes fadeUp {
   from {
@@ -78,7 +93,6 @@ body {
   font-family: "Noto Sans SC", "Inter", system-ui, -apple-system, sans-serif;
   line-height: 1.8;
   min-height: 100vh;
-  transition: background-color 0.3s ease, color 0.3s ease;
   position: relative;
 }
 
