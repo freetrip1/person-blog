@@ -42,6 +42,19 @@ const { title, description = "个人博客 — 文章、项目、设计、摄影
     <script is:inline src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
     <script is:inline>
     (function () {
+      if (!window._animInit) {
+        window._animInit = true;
+        document.addEventListener('astro:after-swap', function () {
+          var els = document.querySelectorAll('.page-enter');
+          els.forEach(function (el) { el.classList.remove('page-enter'); });
+          void document.body.offsetWidth;
+          els.forEach(function (el) { el.classList.add('page-enter'); });
+        });
+      }
+    })();
+    </script>
+    <script is:inline>
+    (function () {
       if (window._vinylInit) return;
       window._vinylInit = true;
       window._vinylState = { isPlaying: false, ap: null, volume: 70 };

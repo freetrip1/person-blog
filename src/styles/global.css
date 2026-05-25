@@ -1,3 +1,19 @@
+/* ── Entrance Animation ── */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-enter {
+  animation: fadeUp 0.55s ease both;
+}
+
 /* ── Reset ── */
 *,
 *::before,
@@ -144,15 +160,16 @@ small {
   font-size: clamp(1.15rem, 2.5vw, 1.5rem);
   font-weight: 400;
   letter-spacing: 0.01em;
-  transition: transform 0.25s ease;
-}
-
-.toc-item:hover {
-  transform: scale(1.06);
 }
 
 .toc-label {
   white-space: nowrap;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), color 0.3s ease;
+}
+
+.toc-item:hover .toc-label {
+  transform: translateX(-6px);
+  color: var(--accent);
 }
 
 .toc-dots {
@@ -166,6 +183,34 @@ small {
   background-size: 18px 4px;
   background-repeat: repeat-x;
   background-position: left center;
+  transition: background-size 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+}
+
+.toc-item:hover .toc-dots {
+  background-size: 11px 4px;
+  opacity: 0.6;
+}
+
+.bottom-nav .toc-item {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.bottom-nav .toc-dots {
+  background-image: radial-gradient(circle, var(--dots) 1.5px, transparent 1.5px);
+  background-size: 14px 6px;
+  background-position: left center;
+  height: 6px;
+  top: -0.15em;
+}
+
+.bottom-nav .toc-page {
+  font-size: 0.85em;
+}
+
+.bottom-nav .toc-item:hover .toc-dots {
+  background-size: 8px 6px;
+  opacity: 0.6;
 }
 
 .toc-page {
@@ -173,6 +218,11 @@ small {
   color: var(--muted);
   font-style: italic;
   white-space: nowrap;
+  transition: color 0.3s ease;
+}
+
+.toc-item:hover .toc-page {
+  color: var(--accent);
 }
 
 /* ── Content Page ── */
