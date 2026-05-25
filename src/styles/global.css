@@ -19,6 +19,12 @@ html:has(.vinyl-wrap:hover) .name {
   transition: none !important;
 }
 
+/* 但保留切换图标的 transition，让日落月升动画能播完 */
+.theme-switching .icon-sun,
+.theme-switching .icon-moon {
+  transition: opacity 0.55s ease, transform 0.65s cubic-bezier(0.65, 0, 0.35, 1) !important;
+}
+
 /* ── Entrance Animation ── */
 @keyframes fadeUp {
   from {
@@ -468,11 +474,6 @@ small {
   height: 1.2em;
   fill: none;
   stroke: currentColor;
-  transition: transform 0.3s ease;
-}
-
-.theme-toggle:hover svg {
-  transform: rotate(15deg);
 }
 
 /* ── Vinyl Player ── */
