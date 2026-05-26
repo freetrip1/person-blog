@@ -41,10 +41,26 @@ const {
     return window.location.origin + file;
   }
 
+  function prefetchAlternateTheme() {
+    if (window.location.protocol !== "https:") return;
+    var isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    var alternate = isDark ? "light" : "dark";
+    var origin = window.location.origin;
+    var url = origin + "/giscus-" + alternate + ".css";
+    if (document.querySelector('link[rel="prefetch"][href="' + url + '"]')) return;
+    var link = document.createElement("link");
+    link.rel = "prefetch";
+    link.as = "style";
+    link.href = url;
+    document.head.appendChild(link);
+  }
+
   function loadGiscus() {
     var container = document.querySelector(".giscus");
     if (!container || container.querySelector("iframe")) return;
     container.innerHTML = "";
+
+    prefetchAlternateTheme();
 
     var script = document.createElement("script");
     script.src = "https://giscus.app/client.js";
