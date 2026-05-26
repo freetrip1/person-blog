@@ -1,0 +1,85 @@
+/* Giscus 自定义主题 — 与 Freetrip 白天暖纸面色匹配 */
+
+main {
+  /* 主面板背景：和站点 --bg 一致 */
+  --color-canvas-default: #f5f0e8;
+  --color-canvas-overlay: #f5f0e8;
+  --color-canvas-inset: #ebe6da;
+  --color-canvas-subtle: #ebe6da;
+
+  /* 文字 */
+  --color-fg-default: #2c2c2c;
+  --color-fg-muted: #6b6b6b;
+  --color-fg-subtle: #8b7355;
+
+  /* 边框 */
+  --color-border-default: #e4ddd0;
+  --color-border-muted: #ebe6da;
+  --color-neutral-muted: rgba(139, 115, 85, 0.15);
+
+  /* 链接 / 强调色（沿用 --accent #8b7355） */
+  --color-accent-fg: #8b7355;
+  --color-accent-emphasis: #8b7355;
+  --color-accent-muted: rgba(139, 115, 85, 0.3);
+  --color-accent-subtle: #ebe6da;
+
+  /* 按钮 */
+  --color-btn-text: #2c2c2c;
+  --color-btn-bg: #ebe6da;
+  --color-btn-border: rgba(139, 115, 85, 0.2);
+  --color-btn-shadow: 0 1px 0 rgba(139, 115, 85, 0.04);
+  --color-btn-inset-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  --color-btn-hover-bg: #e0d9c8;
+  --color-btn-hover-border: rgba(139, 115, 85, 0.3);
+  --color-btn-active-bg: #d8cfb9;
+  --color-btn-active-border: rgba(139, 115, 85, 0.3);
+  --color-btn-selected-bg: #d4c9b0;
+
+  /* 主按钮（发表/反应）*/
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #8b7355;
+  --color-btn-primary-border: rgba(0, 0, 0, 0.1);
+  --color-btn-primary-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+  --color-btn-primary-inset-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --color-btn-primary-hover-bg: #74604a;
+  --color-btn-primary-hover-border: rgba(0, 0, 0, 0.15);
+  --color-btn-primary-selected-bg: #5c4b3a;
+  --color-btn-primary-disabled-text: rgba(255, 255, 255, 0.8);
+  --color-btn-primary-disabled-bg: #c4a87a;
+
+  /* 列表项 hover */
+  --color-action-list-item-default-hover-bg: rgba(139, 115, 85, 0.1);
+
+  /* 分段控件（comments 数 tab）*/
+  --color-segmented-control-bg: rgba(139, 115, 85, 0.12);
+  --color-segmented-control-button-bg-selected: #f5f0e8;
+  --color-segmented-control-button-selected-border: rgba(139, 115, 85, 0.3);
+
+  /* 状态色保留 GitHub 原色 */
+  --color-success-fg: #1a7f37;
+  --color-attention-fg: #9a6700;
+  --color-attention-subtle: #fff8c5;
+  --color-danger-fg: #d1242f;
+  --color-danger-subtle: #ffebe9;
+
+  --color-primer-shadow-inset: 0 1px 0 rgba(208, 215, 222, 0.2);
+
+  /* 语法高亮（如果评论里有代码块）*/
+  --color-prettylights-syntax-comment: #6b6b6b;
+  --color-prettylights-syntax-constant: #0550ae;
+  --color-prettylights-syntax-entity: #8250df;
+  --color-prettylights-syntax-storage-modifier-import: #2c2c2c;
+  --color-prettylights-syntax-entity-tag: #116329;
+  --color-prettylights-syntax-keyword: #cf222e;
+  --color-prettylights-syntax-string: #0a3069;
+  --color-prettylights-syntax-variable: #953800;
+}
+
+main {
+  background-color: var(--color-canvas-default);
+}
+
+.gsc-comments > .gsc-header,
+.gsc-comments > .gsc-comments-count {
+  color: var(--color-fg-muted);
+}

@@ -54,6 +54,10 @@ src/
 └── data/
     └── links.json             # 友链列表（由 GitHub Action 维护状态）
 
+public/
+├── giscus-light.css           # Giscus 评论区白天主题（暖纸面色）
+└── giscus-dark.css            # Giscus 评论区黑夜主题
+
 .github/workflows/
 └── check-friends.yml          # 每日 03:00（北京时间）双向检测友链状态
 
@@ -69,6 +73,7 @@ scripts/
 - **图标动画**：点切换按钮时，太阳向下沉、月亮升起来（或反向），0.65s `cubic-bezier(0.65, 0, 0.35, 1)`
 - **抗闪屏机制**：
   - 切换瞬间在 `<html>` 加 `.theme-switching` 类，全局禁用 transition，避免颜色经过灰色帧
+  - 但保留 `.icon-sun` / `.icon-moon` 的 transition，让日落月升动画能完整播完
   - `astro:before-swap` 给即将插入的新文档预先打上 `data-theme`，避免 ClientRouter 切页时白闪
 
 ### 入场动画（仅首页）
@@ -88,15 +93,33 @@ scripts/
 
 首页身份栏 `晨 / 午 / 暮 / 夜 ── 开发者 / 创作者`，根据访问时间动态显示对应字（5-11 晨 / 11-17 午 / 17-21 暮 / 其余 夜）。
 
+### 名字交互
+
+首页 `Freetrip` 标题 hover 时字距展开 0.06em、颜色转 accent。同时通过 CSS `:has()` 与黑胶唱片 hover 联动——hover 唱片区域时名字也展开，反之亦然。
+
 ### 黑胶唱片
 
-- 顶部下垂 220px，hover 显露 + 出现控制条（播放、上下首、音量）
+- 顶部下垂 220px，桌面端 hover 显露唱片 + 出现控制条（播放、上下首、音量）
 - 唱片状态（播放进度、音量、当前歌曲）通过 `window._vinylState` 在 ClientRouter 切页后持久化
 - 切歌时新唱片从上方滑入、旧唱片淡出
+- **点击穿透修复**：`.vinyl-wrap` 设 `pointer-events: none`，只让 `.vinyl-record` 和 `.vinyl-controls` 接收点击；子页面 `.page-top` 设 `z-index: 101` 高于唱片，确保"← 返回"始终可点
+- **触屏适配**：`@media (hover: none)` 下唱片默认半透明可见、控制条常驻显示（不依赖 hover）
+- **窄屏缩放**：`@media (max-width: 480px)` 唱片 `scale(0.6)` 避免溢出小屏
 
 ### 404 撕页
 
 整页背景变成"桌面"色，中央漂浮一张带 SVG `feTurbulence` 扰动出有机撕痕的纸张，4 个边都是不规则裂口，带 drop-shadow。
+
+### Giscus 自定义主题
+
+`public/giscus-light.css` 和 `public/giscus-dark.css` 用站点 token 复刻 Giscus 的全套 GitHub Primer 变量，让评论区底色和你的纸面色一致：
+- 主面板背景 = 站点 `--bg`
+- 主按钮背景 = 站点 `--accent`（暖棕色，不是 GitHub 的绿色）
+- 边框、按钮 hover、分段控件全套和谐到暖色调
+
+主题切换时通过 `postMessage` 向 iframe 发送新 URL，Giscus 自动重新加载。
+
+**dev 限制**：本地 HTTP 下 giscus.app（HTTPS） iframe 因 mixed content 无法加载自定义 CSS，组件自动回退到内置 `light` / `dark` 主题。**生产 HTTPS** 部署后自动启用自定义主题。
 
 ### 友链系统
 
@@ -121,9 +144,10 @@ push 到 `master` 分支即触发 Vercel 自动部署。
 
 ## 已知怪点
 
-- Vite 的 HMR 偶尔会缓存旧的 scoped style，改 CSS 看不到效果时**重启 dev server + 浏览器硬刷新**通常解决
-- View Transitions 在 Safari 15.4 以下退化为即时切换
-- APlayer 通过 3 个 Meting endpoints 容灾（`api.injahow.cn` / `meting.qjqq.cn` / `api.i-meto.com`），某个挂了会自动 fallback
+- **Vite HMR 偶尔卡 CSS 缓存**：改 CSS 看不到效果时，**重启 dev server + 浏览器硬刷新**通常解决
+- **View Transitions 在 Safari 15.4 以下**退化为即时切换（无 cross-fade）
+- **Giscus 自定义主题在 dev 下被 mixed content 拦截**：本地用内置主题，生产 HTTPS 用自定义
+- **APlayer 依赖第三方 Meting API**（`api.injahow.cn` / `meting.qjqq.cn` / `api.i-meto.com`），三个公益接口可能同时挂掉，唱片会转但不发声；长期方案是自建 Meting API 到 Vercel serverless
 
 ## License
 

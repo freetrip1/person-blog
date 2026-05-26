@@ -1,0 +1,100 @@
+/* Giscus 自定义主题 — Freetrip 黑夜模式：白字白框 */
+
+main {
+  --color-canvas-default: #0a0908;
+  --color-canvas-overlay: #1a1815;
+  --color-canvas-inset: #15130f;
+  --color-canvas-subtle: #1a1815;
+
+  --color-fg-default: #ffffff;
+  --color-fg-muted: #ffffff;
+  --color-fg-subtle: #ffffff;
+  --color-fg-on-emphasis: #ffffff;
+
+  --color-border-default: #ffffff;
+  --color-border-muted: #ffffff;
+  --color-neutral-muted: rgba(255, 255, 255, 0.3);
+
+  --color-accent-fg: #ffffff;
+  --color-accent-emphasis: #ffffff;
+  --color-accent-muted: rgba(255, 255, 255, 0.4);
+  --color-accent-subtle: rgba(255, 255, 255, 0.15);
+
+  --color-btn-text: #ffffff;
+  --color-btn-bg: #1a1815;
+  --color-btn-border: #ffffff;
+  --color-btn-hover-bg: #2a2520;
+  --color-btn-hover-border: #ffffff;
+  --color-btn-active-bg: #38312a;
+  --color-btn-active-border: #ffffff;
+  --color-btn-selected-bg: #38312a;
+  --color-btn-counter-bg: #2a2520;
+
+  --color-btn-primary-text: #0a0908;
+  --color-btn-primary-bg: #ffffff;
+  --color-btn-primary-border: #ffffff;
+  --color-btn-primary-hover-bg: #e8e2d6;
+  --color-btn-primary-hover-border: #ffffff;
+
+  --color-action-list-item-default-hover-bg: rgba(255, 255, 255, 0.1);
+
+  --color-segmented-control-bg: rgba(255, 255, 255, 0.1);
+  --color-segmented-control-button-bg-selected: #1a1815;
+  --color-segmented-control-button-selected-border: #ffffff;
+
+  --color-success-fg: #ffffff;
+  --color-attention-fg: #ffffff;
+  --color-danger-fg: #ffffff;
+}
+
+html,
+body,
+main,
+.gsc-main,
+.gsc-comments,
+.gsc-timeline {
+  background-color: #0a0908 !important;
+  color: #ffffff !important;
+}
+
+main *,
+.gsc-comments *,
+.gsc-header *,
+.gsc-comment *,
+.gsc-comment-box *,
+.gsc-reactions *,
+.gsc-login *,
+.gsc-replies * {
+  color: #ffffff !important;
+}
+
+.gsc-comment-box,
+.gsc-comment,
+.gsc-comment-box-write,
+.gsc-comment-box-preview,
+.gsc-reactions,
+.gsc-login,
+.gsc-comment-header,
+.gsc-comment-footer,
+input,
+textarea,
+button {
+  border-color: #ffffff !important;
+}
+
+input,
+textarea,
+.gsc-comment-box-textarea {
+  background-color: #1a1815 !important;
+  color: #ffffff !important;
+}
+
+a {
+  color: #ffffff !important;
+  text-decoration: underline;
+}
+
+main {
+  background-color: var(--color-canvas-default);
+  color: #ffffff;
+}
