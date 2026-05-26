@@ -1,4 +1,4 @@
-name: 友链双向检测
+name: 友链自动同步 + 双向检测
 
 on:
   schedule:
@@ -6,8 +6,12 @@ on:
     - cron: "0 19 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: write
+  discussions: read
+
 jobs:
-  check-links:
+  sync-and-check:
     runs-on: ubuntu-latest
     steps:
       - name: 检出代码
@@ -18,11 +22,16 @@ jobs:
         with:
           node-version: "22"
 
-      - name: 运行检测脚本
+      - name: 同步友链申请（从 Giscus Discussion 抓取）
+        run: node scripts/sync-friends.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 双向检测（验证对方是否还挂着我方链接）
         run: node scripts/check-links.js
 
       - name: 提交变更
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: 自动更新友链状态"
+          commit_message: "chore: 自动同步友链 + 状态更新"
           file_pattern: src/data/links.json
