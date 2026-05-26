@@ -6,16 +6,39 @@ import ThemeToggle from "../components/ThemeToggle.astro";
 
 <Base title="Freetrip">
   <main class="home">
-    <header class="home-header">
+    <header class="home-header page-enter">
       <h1 class="name">Freetrip</h1>
-      <p class="identity">开发者 / 创作者</p>
+      <p class="identity">
+        <span class="hour-mark" id="hour-mark">夜</span>
+        <span class="hour-sep">──</span>
+        <span class="identity-text">开发者 / 创作者</span>
+      </p>
     </header>
+
+    <script is:inline>
+      (function () {
+        function updateHour() {
+          var h = new Date().getHours();
+          var mark;
+          if (h >= 5 && h < 11) mark = "晨";
+          else if (h >= 11 && h < 17) mark = "午";
+          else if (h >= 17 && h < 21) mark = "暮";
+          else mark = "夜";
+          var el = document.getElementById("hour-mark");
+          if (el) el.textContent = mark;
+        }
+        updateHour();
+        document.addEventListener("astro:after-swap", updateHour);
+      })();
+    </script>
+
+    <div class="home-divider page-enter" aria-hidden="true">❧</div>
 
     <section class="home-nav">
       <TableOfContents />
     </section>
 
-    <footer class="home-footer">
+    <footer class="home-footer page-enter">
       <span class="volume-wrap">
         <span class="volume-label">第一卷</span>
         <ThemeToggle />
@@ -43,12 +66,37 @@ import ThemeToggle from "../components/ThemeToggle.astro";
   .name {
     font-family: "Noto Serif SC", serif;
     margin-bottom: 0.1em;
+    transition: letter-spacing 0.5s cubic-bezier(0.22, 1, 0.36, 1), color 0.5s ease;
+    cursor: default;
+  }
+
+  .name:hover {
+    letter-spacing: 0.06em;
+    color: var(--accent);
   }
 
   .identity {
     font-size: 1.1rem;
     color: var(--muted);
     font-weight: 300;
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.6em;
+  }
+
+  .hour-mark {
+    font-family: "Noto Serif SC", serif;
+    font-weight: 600;
+    font-size: 1.15em;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+
+  .hour-sep {
+    color: var(--fg);
+    opacity: 0.3;
+    letter-spacing: -0.1em;
   }
 
   .home-nav {
@@ -79,5 +127,38 @@ import ThemeToggle from "../components/ThemeToggle.astro";
 
   :global([data-theme="dark"]) .volume-label {
     color: #ffffff;
+  }
+
+  .home-header.page-enter {
+    animation: fadeUp 0.6s ease both;
+    animation-delay: 0.05s;
+  }
+
+  .home-divider {
+    text-align: center;
+    font-family: "Noto Serif SC", serif;
+    font-size: 1.5rem;
+    color: var(--accent);
+    opacity: 0.55;
+    margin: 0.5rem 0 1.5rem;
+    line-height: 1;
+    user-select: none;
+  }
+
+  .home-divider.page-enter {
+    animation: fadeUp 0.55s ease both;
+    animation-delay: 0.14s;
+  }
+
+  :global(.toc-list li.page-enter:nth-child(1)) { animation: fadeUp 0.5s ease both; animation-delay: 0.22s; }
+  :global(.toc-list li.page-enter:nth-child(2)) { animation: fadeUp 0.5s ease both; animation-delay: 0.30s; }
+  :global(.toc-list li.page-enter:nth-child(3)) { animation: fadeUp 0.5s ease both; animation-delay: 0.38s; }
+  :global(.toc-list li.page-enter:nth-child(4)) { animation: fadeUp 0.5s ease both; animation-delay: 0.46s; }
+  :global(.toc-list li.page-enter:nth-child(5)) { animation: fadeUp 0.5s ease both; animation-delay: 0.54s; }
+  :global(.toc-list li.page-enter:nth-child(6)) { animation: fadeUp 0.5s ease both; animation-delay: 0.62s; }
+
+  .home-footer.page-enter {
+    animation: fadeUp 0.5s ease both;
+    animation-delay: 0.75s;
   }
 </style>

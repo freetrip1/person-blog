@@ -1,3 +1,46 @@
+/* ── Vinyl Hover ↔ Name Sync ── */
+html:has(.vinyl-wrap:hover) .name {
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+
+/* ── 关掉 ClientRouter 默认 cross-fade，避免黑夜模式下闪屏 ── */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* ── 切主题时短暂禁用所有 transition，避免颜色渐变穿过灰色 ── */
+.theme-switching,
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+  transition: none !important;
+}
+
+/* 但保留切换图标的 transition，让日落月升动画能播完 */
+.theme-switching .icon-sun,
+.theme-switching .icon-moon {
+  transition: opacity 0.55s ease, transform 0.65s cubic-bezier(0.65, 0, 0.35, 1) !important;
+}
+
+/* ── Entrance Animation ── */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-enter {
+  animation: fadeUp 0.55s ease both;
+}
+
 /* ── Reset ── */
 *,
 *::before,
@@ -56,8 +99,8 @@ body {
   font-family: "Noto Sans SC", "Inter", system-ui, -apple-system, sans-serif;
   line-height: 1.8;
   min-height: 100vh;
-  transition: background-color 0.3s ease, color 0.3s ease;
   position: relative;
+  overflow-x: hidden;
 }
 
 body::before {
@@ -144,15 +187,16 @@ small {
   font-size: clamp(1.15rem, 2.5vw, 1.5rem);
   font-weight: 400;
   letter-spacing: 0.01em;
-  transition: transform 0.25s ease;
-}
-
-.toc-item:hover {
-  transform: scale(1.06);
 }
 
 .toc-label {
   white-space: nowrap;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), color 0.3s ease;
+}
+
+.toc-item:hover .toc-label {
+  transform: translateX(-6px);
+  color: var(--accent);
 }
 
 .toc-dots {
@@ -166,6 +210,34 @@ small {
   background-size: 18px 4px;
   background-repeat: repeat-x;
   background-position: left center;
+  transition: background-size 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+}
+
+.toc-item:hover .toc-dots {
+  background-size: 11px 4px;
+  opacity: 0.6;
+}
+
+.bottom-nav .toc-item {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.bottom-nav .toc-dots {
+  background-image: radial-gradient(circle, var(--dots) 1.5px, transparent 1.5px);
+  background-size: 14px 6px;
+  background-position: left center;
+  height: 6px;
+  top: -0.15em;
+}
+
+.bottom-nav .toc-page {
+  font-size: 0.85em;
+}
+
+.bottom-nav .toc-item:hover .toc-dots {
+  background-size: 8px 6px;
+  opacity: 0.6;
 }
 
 .toc-page {
@@ -173,6 +245,11 @@ small {
   color: var(--muted);
   font-style: italic;
   white-space: nowrap;
+  transition: color 0.3s ease;
+}
+
+.toc-item:hover .toc-page {
+  color: var(--accent);
 }
 
 /* ── Content Page ── */
@@ -212,6 +289,8 @@ small {
   justify-content: space-between;
   margin-bottom: 2rem;
   text-align: left;
+  position: relative;
+  z-index: 101;
 }
 
 /* ── Prose (blog content) ── */
@@ -398,11 +477,6 @@ small {
   height: 1.2em;
   fill: none;
   stroke: currentColor;
-  transition: transform 0.3s ease;
-}
-
-.theme-toggle:hover svg {
-  transform: rotate(15deg);
 }
 
 /* ── Vinyl Player ── */
@@ -415,6 +489,32 @@ small {
   z-index: 100;
   width: 440px;
   height: 400px;
+  /* wrap 自身不拦截点击，只让真正可交互的子元素接收 */
+  pointer-events: none;
+}
+
+.vinyl-record,
+.vinyl-controls {
+  pointer-events: auto;
+}
+
+/* 触屏设备：无 hover 也能用——唱片默认半透明显示、控制条常驻 */
+@media (hover: none) {
+  .vinyl-record {
+    opacity: 0.15;
+  }
+  .vinyl-controls {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* 窄屏（≤480px）整体缩小 60%，避免溢出 */
+@media (max-width: 480px) {
+  .vinyl-wrap {
+    transform: translateX(-50%) scale(0.6);
+    transform-origin: top center;
+  }
 }
 
 .vinyl-record {
@@ -506,7 +606,7 @@ small {
 
 .vinyl-controls {
   position: absolute;
-  bottom: 65px;
+  bottom: 110px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;

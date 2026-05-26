@@ -31,12 +31,21 @@ const {
 </div>
 
 <script is:inline>
+  function giscusThemeUrl() {
+    var isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    // dev (HTTP) 下 giscus.app (HTTPS) iframe 无法加载 HTTP 资源，回退到内置主题
+    if (window.location.protocol !== "https:") {
+      return isDark ? "dark" : "light";
+    }
+    var file = isDark ? "/giscus-dark.css" : "/giscus-light.css";
+    return window.location.origin + file;
+  }
+
   function loadGiscus() {
     var container = document.querySelector(".giscus");
     if (!container || container.querySelector("iframe")) return;
     container.innerHTML = "";
 
-    var isDark = document.documentElement.getAttribute("data-theme") === "dark";
     var script = document.createElement("script");
     script.src = "https://giscus.app/client.js";
     script.setAttribute("data-repo", "freetrip1/person-blog");
@@ -48,7 +57,7 @@ const {
     script.setAttribute("data-reactions-enabled", "1");
     script.setAttribute("data-emit-metadata", "0");
     script.setAttribute("data-input-position", "top");
-    script.setAttribute("data-theme", isDark ? "dark" : "light");
+    script.setAttribute("data-theme", giscusThemeUrl());
     script.setAttribute("data-lang", "zh-CN");
     script.setAttribute("crossorigin", "anonymous");
     script.async = true;
@@ -56,12 +65,10 @@ const {
   }
 
   function updateGiscusTheme() {
-    var isDark = document.documentElement.getAttribute("data-theme") === "dark";
-    var theme = isDark ? "dark" : "light";
     var iframe = document.querySelector("iframe.giscus-frame");
     if (iframe) {
       iframe.contentWindow.postMessage(
-        { giscus: { setConfig: { theme: theme } } },
+        { giscus: { setConfig: { theme: giscusThemeUrl() } } },
         "https://giscus.app"
       );
     }
