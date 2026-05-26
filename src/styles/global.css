@@ -577,7 +577,7 @@ small {
 
 .vinyl-controls {
   position: absolute;
-  bottom: 65px;
+  bottom: 110px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
