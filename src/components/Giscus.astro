@@ -82,12 +82,19 @@ const {
 
   function updateGiscusTheme() {
     var iframe = document.querySelector("iframe.giscus-frame");
-    if (iframe) {
-      iframe.contentWindow.postMessage(
-        { giscus: { setConfig: { theme: giscusThemeUrl() } } },
-        "https://giscus.app"
-      );
-    }
+    if (!iframe) return;
+    // 切换前瞬间隐藏 iframe，让用户看到的是页面背景色（已经是新主题色）
+    iframe.style.transition = "none";
+    iframe.style.opacity = "0";
+    iframe.contentWindow.postMessage(
+      { giscus: { setConfig: { theme: giscusThemeUrl() } } },
+      "https://giscus.app"
+    );
+    // iframe 在背后完成主题切换后，淡入显示
+    setTimeout(function () {
+      iframe.style.transition = "opacity 0.25s ease";
+      iframe.style.opacity = "1";
+    }, 380);
   }
 
   // 初始加载
