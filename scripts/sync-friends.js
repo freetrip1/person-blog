@@ -86,19 +86,55 @@ async function fetchDiscussions(categoryId) {
   return data.repository.discussions.nodes;
 }
 
+function normalizeProtocol(url) {
+  let u = url.trim().replace(/[\s,，;。]+$/, "");
+  if (!/^https?:\/\//i.test(u)) u = "https://" + u;
+  return u;
+}
+
+function looksLikeUrl(s) {
+  return /^(https?:\/\/)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/.test(s.trim());
+}
+
 function parseApplication(text) {
   if (!text) return null;
+
+  // 严格格式：名称：xxx / 地址：xxx / 描述：xxx
   const nameMatch = text.match(/名称\s*[：:]\s*(.+)/);
   const urlMatch = text.match(/地址\s*[：:]\s*(\S+)/);
   const descMatch = text.match(/描述\s*[：:]\s*(.+)/);
-  if (!nameMatch || !urlMatch || !descMatch) return null;
-  const url = urlMatch[1].trim().replace(/[\s,，;。]+$/, "");
-  if (!/^https?:\/\//i.test(url)) return null;
-  return {
-    name: nameMatch[1].trim(),
-    url,
-    desc: descMatch[1].trim(),
-  };
+  if (nameMatch && urlMatch && descMatch) {
+    return {
+      name: nameMatch[1].trim(),
+      url: normalizeProtocol(urlMatch[1]),
+      desc: descMatch[1].trim(),
+    };
+  }
+
+  // 宽松格式：三行（或更多），其中一行像 URL，按顺序推断
+  const lines = text
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+  if (lines.length >= 3) {
+    // 找第一个像 URL 的行
+    const urlIdx = lines.findIndex(looksLikeUrl);
+    if (urlIdx >= 0) {
+      const nameIdx = urlIdx === 0 ? 1 : 0;
+      const descIdx = lines.findIndex(
+        (l, i) => i !== urlIdx && i !== nameIdx
+      );
+      if (nameIdx >= 0 && descIdx >= 0) {
+        return {
+          name: lines[nameIdx],
+          url: normalizeProtocol(lines[urlIdx]),
+          desc: lines[descIdx],
+        };
+      }
+    }
+  }
+
+  return null;
 }
 
 function normalizeUrl(url) {
