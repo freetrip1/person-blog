@@ -100,6 +100,7 @@ body {
   line-height: 1.8;
   min-height: 100vh;
   position: relative;
+  overflow-x: hidden;
 }
 
 body::before {
@@ -288,6 +289,8 @@ small {
   justify-content: space-between;
   margin-bottom: 2rem;
   text-align: left;
+  position: relative;
+  z-index: 101;
 }
 
 /* ── Prose (blog content) ── */
@@ -486,6 +489,32 @@ small {
   z-index: 100;
   width: 440px;
   height: 400px;
+  /* wrap 自身不拦截点击，只让真正可交互的子元素接收 */
+  pointer-events: none;
+}
+
+.vinyl-record,
+.vinyl-controls {
+  pointer-events: auto;
+}
+
+/* 触屏设备：无 hover 也能用——唱片默认半透明显示、控制条常驻 */
+@media (hover: none) {
+  .vinyl-record {
+    opacity: 0.15;
+  }
+  .vinyl-controls {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* 窄屏（≤480px）整体缩小 60%，避免溢出 */
+@media (max-width: 480px) {
+  .vinyl-wrap {
+    transform: translateX(-50%) scale(0.6);
+    transform-origin: top center;
+  }
 }
 
 .vinyl-record {
