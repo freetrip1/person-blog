@@ -30,10 +30,10 @@ main {
   --color-btn-selected-bg: #38312a;
   --color-btn-counter-bg: #2a2520;
 
-  --color-btn-primary-text: #0a0908;
-  --color-btn-primary-bg: #ffffff;
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #000000;
   --color-btn-primary-border: #ffffff;
-  --color-btn-primary-hover-bg: #e8e2d6;
+  --color-btn-primary-hover-bg: #1a1815;
   --color-btn-primary-hover-border: #ffffff;
 
   --color-action-list-item-default-hover-bg: rgba(255, 255, 255, 0.1);
