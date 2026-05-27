@@ -94,6 +94,42 @@ a {
   text-decoration: underline;
 }
 
+/* GitHub 登录按钮强制高对比：白底深字深 logo */
+.gsc-social-button,
+.gsc-sign-in-button,
+.gsc-login button,
+.gsc-login a[href*="oauth"] {
+  background-color: #ffffff !important;
+  background-image: none !important;
+  color: #0a0908 !important;
+  border: 1px solid #ffffff !important;
+  font-weight: 600 !important;
+  opacity: 1 !important;
+}
+
+.gsc-social-button:hover,
+.gsc-sign-in-button:hover,
+.gsc-login button:hover,
+.gsc-login a[href*="oauth"]:hover {
+  background-color: #e8e2d6 !important;
+  color: #0a0908 !important;
+}
+
+.gsc-social-button *,
+.gsc-sign-in-button *,
+.gsc-login button *,
+.gsc-login a[href*="oauth"] * {
+  color: #0a0908 !important;
+}
+
+.gsc-social-button svg,
+.gsc-sign-in-button svg,
+.gsc-login button svg,
+.gsc-login a[href*="oauth"] svg {
+  fill: #0a0908 !important;
+  color: #0a0908 !important;
+}
+
 main {
   background-color: var(--color-canvas-default);
   color: #ffffff;
