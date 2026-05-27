@@ -20,6 +20,11 @@ async function checkLinks() {
 
   for (const link of linksData) {
     if (!link.linkPage) continue;
+    // 手工标记的友链跳过双向检测（对方不一定有友链系统）
+    if (link.manual === true) {
+      console.log(`[跳过] ${link.name}: 手工标记 (manual:true)`);
+      continue;
+    }
 
     try {
       console.log(`检测: ${link.name} (${link.linkPage})`);

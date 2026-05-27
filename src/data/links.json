@@ -5,6 +5,7 @@
     "desc": "AI训练师个人网站",
     "linkPage": "https://ccwan-ai.com",
     "status": "active",
+    "manual": true,
     "author": "Chen-Cc-96",
     "sourceUrl": "https://github.com/freetrip1/person-blog/discussions/2",
     "addedAt": "2026-05-26"
