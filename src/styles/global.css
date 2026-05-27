@@ -101,6 +101,20 @@ body {
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
+  /* 钢笔光标（56x56，热点在笔尖位置 6, 50） */
+  cursor: url("/cursor-feather-light.svg") 6 50, auto;
+}
+
+[data-theme="dark"] body {
+  cursor: url("/cursor-feather-dark.svg") 6 50, auto;
+}
+
+/* 输入框保留文字光标，便于打字定位 */
+input,
+textarea,
+[contenteditable="true"],
+.gsc-comment-box-textarea {
+  cursor: text;
 }
 
 body::before {
