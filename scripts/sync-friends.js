@@ -176,26 +176,35 @@ async function main() {
 
   let added = 0;
 
+  function isBot(login) {
+    if (!login) return false;
+    var l = login.toLowerCase();
+    return l === "giscus" || l.endsWith("[bot]");
+  }
+
   for (const disc of discussions) {
-    // 1. 检查 Discussion body
-    const bodyApp = parseApplication(disc.body);
-    if (bodyApp && !existingUrls.has(normalizeUrl(bodyApp.url))) {
-      console.log(`新申请（body）: ${bodyApp.name} <${bodyApp.url}>`);
-      const linkPage = await detectLinkPage(bodyApp.url);
-      linksData.push({
-        ...bodyApp,
-        linkPage,
-        status: "pending",
-        author: disc.author?.login || "",
-        sourceUrl: disc.url,
-        addedAt: new Date().toISOString().slice(0, 10),
-      });
-      existingUrls.add(normalizeUrl(bodyApp.url));
-      added++;
+    // 1. 检查 Discussion body —— 跳过 giscus 等 bot 自动生成的
+    if (!isBot(disc.author?.login)) {
+      const bodyApp = parseApplication(disc.body);
+      if (bodyApp && !existingUrls.has(normalizeUrl(bodyApp.url))) {
+        console.log(`新申请（body）: ${bodyApp.name} <${bodyApp.url}>`);
+        const linkPage = await detectLinkPage(bodyApp.url);
+        linksData.push({
+          ...bodyApp,
+          linkPage,
+          status: "pending",
+          author: disc.author?.login || "",
+          sourceUrl: disc.url,
+          addedAt: new Date().toISOString().slice(0, 10),
+        });
+        existingUrls.add(normalizeUrl(bodyApp.url));
+        added++;
+      }
     }
 
-    // 2. 检查每条评论
+    // 2. 检查每条评论 —— 同样跳过 bot
     for (const c of disc.comments.nodes) {
+      if (isBot(c.author?.login)) continue;
       const app = parseApplication(c.body);
       if (!app) continue;
       if (existingUrls.has(normalizeUrl(app.url))) continue;
