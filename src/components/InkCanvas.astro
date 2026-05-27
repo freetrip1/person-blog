@@ -1,0 +1,255 @@
+---
+// 钢笔书写画布：点击右下角按钮进入书写模式
+// 写字、10 秒淡出、ESC 清空+退出模式
+---
+
+<div id="ink-root">
+  <canvas id="ink-canvas" aria-hidden="true"></canvas>
+  <button id="ink-toggle" class="ink-toggle" type="button" aria-label="钢笔书写模式" title="点击进入钢笔书写模式（ESC 退出并清空）">
+    <svg viewBox="0 0 28 28" aria-hidden="true">
+      <g stroke-linejoin="round" stroke-linecap="round">
+        <path d="M 3 25 L 6 22 L 22 6 Q 26 2 26 2 Q 26 6 22 10 L 8 24 L 4 26 Z" fill="currentColor"/>
+        <path d="M 11 13 L 14 13 M 13 11 L 16 11 M 15 9 L 18 9" stroke="currentColor" stroke-width="0.8" fill="none"/>
+      </g>
+    </svg>
+  </button>
+</div>
+
+<style is:global>
+  #ink-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 50;
+  }
+
+  .ink-toggle {
+    position: fixed;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 200;
+    opacity: 0.4;
+    transition: opacity 0.3s ease, border-color 0.3s ease, background 0.3s ease, color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    color: var(--muted);
+  }
+
+  .ink-toggle:hover {
+    opacity: 1;
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .ink-toggle.active {
+    opacity: 1;
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+
+  .ink-toggle svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  body.ink-writing {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body.ink-writing input,
+  body.ink-writing textarea,
+  body.ink-writing [contenteditable] {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
+  @media (hover: none) {
+    #ink-canvas,
+    .ink-toggle {
+      display: none;
+    }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    if (window._inkInit) return;
+    window._inkInit = true;
+
+    if (window.matchMedia && window.matchMedia("(hover: none)").matches) return;
+
+    var FADE_MS = 10000;
+    var dpr = window.devicePixelRatio || 1;
+
+    var strokes = [];
+    var currentStroke = null;
+    var isDrawing = false;
+    var inkMode = false;
+
+    // 每次用都重新拿 DOM 引用，避免 ClientRouter 切页后引用失效
+    function $canvas() { return document.getElementById("ink-canvas"); }
+    function $toggle() { return document.getElementById("ink-toggle"); }
+
+    function setupCanvas() {
+      var canvas = $canvas();
+      if (!canvas) return;
+      var ctx = canvas.getContext("2d");
+      var w = window.innerWidth;
+      var h = window.innerHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
+    }
+    setupCanvas();
+    window.addEventListener("resize", setupCanvas);
+    // 切页后 canvas 可能被替换，重新初始化尺寸
+    document.addEventListener("astro:after-swap", function () {
+      setupCanvas();
+      syncToggleUI();
+    });
+
+    function getInkColor() {
+      var c = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
+      return c || "#8b7355";
+    }
+
+    function syncToggleUI() {
+      var btn = $toggle();
+      if (btn) btn.classList.toggle("active", inkMode);
+      document.body.classList.toggle("ink-writing", inkMode);
+    }
+
+    function setInkMode(on) {
+      inkMode = on;
+      if (!on) {
+        isDrawing = false;
+        currentStroke = null;
+      }
+      syncToggleUI();
+    }
+
+    // 事件委托：监听 document 上的 click，按 ID 找按钮，新旧 DOM 都生效
+    document.addEventListener("click", function (e) {
+      var btn = $toggle();
+      if (btn && (e.target === btn || btn.contains(e.target))) {
+        e.stopPropagation();
+        setInkMode(!inkMode);
+      }
+    });
+
+    document.addEventListener("mousedown", function (e) {
+      if (!inkMode) return;
+      if (e.button !== 0) return;
+      var btn = $toggle();
+      if (btn && (e.target === btn || btn.contains(e.target))) return;
+      isDrawing = true;
+      currentStroke = {
+        startTime: Date.now(),
+        points: [{ x: e.clientX, y: e.clientY, t: Date.now() }],
+        color: getInkColor(),
+      };
+      strokes.push(currentStroke);
+    });
+
+    document.addEventListener("mousemove", function (e) {
+      if (!isDrawing || !currentStroke) return;
+      var pts = currentStroke.points;
+      var last = pts[pts.length - 1];
+      var dx = e.clientX - last.x;
+      var dy = e.clientY - last.y;
+      if (dx * dx + dy * dy < 1) return;
+      pts.push({ x: e.clientX, y: e.clientY, t: Date.now() });
+    });
+
+    function endStroke() {
+      isDrawing = false;
+      currentStroke = null;
+    }
+    document.addEventListener("mouseup", endStroke);
+    document.addEventListener("mouseleave", endStroke);
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        strokes = [];
+        setInkMode(false);
+      }
+    });
+
+    function speed(p1, p2) {
+      var dx = p2.x - p1.x;
+      var dy = p2.y - p1.y;
+      var dt = Math.max(1, p2.t - p1.t);
+      return Math.sqrt(dx * dx + dy * dy) / dt;
+    }
+
+    function widthForSpeed(s) {
+      var w = 3.2 - s * 1.0;
+      if (w < 0.8) w = 0.8;
+      if (w > 3.2) w = 3.2;
+      return w;
+    }
+
+    function render() {
+      var canvas = $canvas();
+      if (!canvas) {
+        requestAnimationFrame(render);
+        return;
+      }
+      var ctx = canvas.getContext("2d");
+      var now = Date.now();
+      var W = canvas.width / dpr;
+      var H = canvas.height / dpr;
+      ctx.clearRect(0, 0, W, H);
+
+      strokes = strokes.filter(function (s) {
+        return now - s.startTime < FADE_MS + 200;
+      });
+
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      for (var i = 0; i < strokes.length; i++) {
+        var stroke = strokes[i];
+        var age = (now - stroke.startTime) / FADE_MS;
+        var opacity = Math.max(0, 1 - age);
+        if (opacity <= 0 || stroke.points.length < 2) continue;
+
+        ctx.globalAlpha = opacity * 0.85;
+        ctx.strokeStyle = stroke.color;
+
+        var pts = stroke.points;
+        for (var j = 1; j < pts.length; j++) {
+          var prev = pts[j - 1];
+          var curr = pts[j];
+          ctx.beginPath();
+          ctx.lineWidth = widthForSpeed(speed(prev, curr));
+          if (j === 1) {
+            ctx.moveTo(prev.x, prev.y);
+          } else {
+            var before = pts[j - 2];
+            ctx.moveTo((before.x + prev.x) / 2, (before.y + prev.y) / 2);
+          }
+          ctx.quadraticCurveTo(prev.x, prev.y, (prev.x + curr.x) / 2, (prev.y + curr.y) / 2);
+          ctx.stroke();
+        }
+      }
+
+      requestAnimationFrame(render);
+    }
+    render();
+  })();
+</script>

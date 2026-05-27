@@ -1,5 +1,6 @@
 ---
 import VinylPlayer from "../components/VinylPlayer.astro";
+import InkCanvas from "../components/InkCanvas.astro";
 import { ClientRouter } from "astro:transitions";
 
 interface Props {
@@ -270,6 +271,7 @@ const { title, description = "个人博客 — 文章、项目、设计、摄影
     </script>
   </head>
   <body>
+    <InkCanvas transition:persist="ink" />
     <VinylPlayer />
     <slot />
   </body>

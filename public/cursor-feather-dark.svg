@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 28 28">
+<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 28 28">
   <g stroke-linejoin="round" stroke-linecap="round">
     <!-- 羽毛主体（泪滴形从右上到左下尖） -->
     <path d="M 3 25 L 6 22 L 22 6 Q 26 2 26 2 Q 26 6 22 10 L 8 24 L 4 26 Z"

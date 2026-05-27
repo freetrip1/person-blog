@@ -101,12 +101,12 @@ body {
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
-  /* 钢笔光标（56x56，热点在笔尖位置 6, 50） */
-  cursor: url("/cursor-feather-light.svg") 6 50, auto;
+  /* 钢笔光标（36x36，热点在笔尖位置 4, 32） */
+  cursor: url("/cursor-feather-light.svg") 4 32, auto;
 }
 
 [data-theme="dark"] body {
-  cursor: url("/cursor-feather-dark.svg") 6 50, auto;
+  cursor: url("/cursor-feather-dark.svg") 4 32, auto;
 }
 
 /* 输入框保留文字光标，便于打字定位 */
