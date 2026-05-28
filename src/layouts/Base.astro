@@ -3,6 +3,7 @@ import VinylPlayer from "../components/VinylPlayer.astro";
 import InkCanvas from "../components/InkCanvas.astro";
 import { ClientRouter } from "astro:transitions";
 import { siteMeta, buildPersonJsonLd } from "../data/siteMeta";
+import { resolveOgRoute } from "../lib/og-routes";
 
 interface Props {
   title: string;
@@ -10,6 +11,9 @@ interface Props {
   ogType?: "website" | "article";
   // seo-foundation: 每页可覆盖的 OG 预览图，默认走 /og-default.png（1200×630）。
   image?: string;
+  // og-cards: 显式指定动态书页 OG 卡路径（如 blog 详情传 /og/blog/<id>.png）。
+  //   缺省时按当前路径自动推导固定页 /og/<slug>.png；都命不中再回退 image/og-default.png。
+  ogImage?: string;
   // seo-foundation: true 时输出 robots noindex（如 404 页）。
   noindex?: boolean;
 }
@@ -19,8 +23,14 @@ const {
   description = siteMeta.description,
   ogType = "website",
   image = "/og-default.png",
+  ogImage,
   noindex = false,
 } = Astro.props;
+
+// og-cards: OG 图解析优先级 —— 显式 ogImage > 按路径推导的动态卡 /og/<slug>.png > image 兜底。
+const derivedOgSlug = resolveOgRoute(Astro.url.pathname);
+const ogCardPath =
+  ogImage ?? (derivedOgSlug ? `/og/${derivedOgSlug}.png` : image);
 
 // 首页标题为站名本身，其余为「页名 · 站名」
 const pageTitle =
@@ -30,11 +40,11 @@ const pageTitle =
 const canonical = Astro.site
   ? new URL(Astro.url.pathname, Astro.site).href
   : Astro.url.pathname;
-// seo-foundation: OG 图优先用 image prop（默认 /og-default.png），转绝对 URL；
+// seo-foundation + og-cards: OG 图转绝对 URL（用 og-cards 解析后的 ogCardPath）；
 // 相对路径会导致社交平台不显示预览图。site 未配时回退原值。
 const ogImageUrl = Astro.site
-  ? new URL(image, Astro.site).href
-  : image;
+  ? new URL(ogCardPath, Astro.site).href
+  : ogCardPath;
 
 // Person JSON-LD —— 用绝对站点 URL；放静态 head，不进 is:inline、不参与 View Transitions
 const jsonLd = buildPersonJsonLd(Astro.site ? Astro.site.href : siteMeta.url);
