@@ -2,13 +2,35 @@
 import VinylPlayer from "../components/VinylPlayer.astro";
 import InkCanvas from "../components/InkCanvas.astro";
 import { ClientRouter } from "astro:transitions";
+import { siteMeta, buildPersonJsonLd } from "../data/siteMeta";
 
 interface Props {
   title: string;
   description?: string;
+  ogType?: "website" | "article";
 }
 
-const { title, description = "个人博客 — 文章、项目、设计、摄影" } = Astro.props;
+const {
+  title,
+  description = siteMeta.description,
+  ogType = "website",
+} = Astro.props;
+
+// 首页标题为站名本身，其余为「页名 · 站名」
+const pageTitle =
+  title === siteMeta.siteName ? siteMeta.siteName : `${title} · ${siteMeta.siteName}`;
+
+// canonical / OG 绝对 URL —— 必须用 Astro.site 守卫，未配 site 时回退相对路径
+const canonical = Astro.site
+  ? new URL(Astro.url.pathname, Astro.site).href
+  : Astro.url.pathname;
+const ogImageUrl =
+  Astro.site && siteMeta.ogImage
+    ? new URL(siteMeta.ogImage, Astro.site).href
+    : (siteMeta.ogImage ?? "");
+
+// Person JSON-LD —— 用绝对站点 URL；放静态 head，不进 is:inline、不参与 View Transitions
+const jsonLd = buildPersonJsonLd(Astro.site ? Astro.site.href : siteMeta.url);
 ---
 
 <!doctype html>
@@ -17,6 +39,23 @@ const { title, description = "个人博客 — 文章、项目、设计、摄影
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    {/* Open Graph */}
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={siteMeta.siteName} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={siteMeta.locale} />
+    {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+
+    {/* Twitter Card */}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -25,7 +64,7 @@ const { title, description = "个人博客 — 文章、项目、设计、摄影
       rel="stylesheet"
     />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css" />
-    <title>{title}</title>
+    <title>{pageTitle}</title>
     <ClientRouter />
     <script is:inline>
       (function () {
@@ -269,6 +308,8 @@ const { title, description = "个人博客 — 文章、项目、设计、摄影
       });
     })();
     </script>
+    {/* 结构化数据：Person JSON-LD。必须用 set:html 避免 HTML 转义；静态 head，不进 is:inline */}
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   </head>
   <body>
     <InkCanvas transition:persist="ink" />

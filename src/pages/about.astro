@@ -2,6 +2,7 @@
 import Base from "../layouts/Base.astro";
 import ThemeToggle from "../components/ThemeToggle.astro";
 import BottomNav from "../components/BottomNav.astro";
+import { siteMeta } from "../data/siteMeta";
 ---
 
 <Base title="关于" description="关于 Freetrip">
@@ -14,6 +15,11 @@ import BottomNav from "../components/BottomNav.astro";
     <h1>关于</h1>
     <p class="subtitle">一些关于我的事情</p>
 
+    <p class="spine-tagline">
+      {siteMeta.spineTaglineCN}
+      <span class="spine-tagline-en">{siteMeta.spineTaglineEN}</span>
+    </p>
+
     <div class="prose">
       <p>你好，我是 Freetrip。</p>
       <p>一个对设计、代码和创作有持续热情的人。我相信好的设计是克制的，好的代码是简洁的，好的内容是诚实的。</p>
@@ -24,3 +30,23 @@ import BottomNav from "../components/BottomNav.astro";
     <BottomNav />
   </article>
 </Base>
+
+<style>
+  .spine-tagline {
+    font-family: "Noto Serif SC", serif;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    font-size: 1.05rem;
+    margin: 0.4rem 0 1.8rem;
+    line-height: 1.7;
+  }
+
+  .spine-tagline-en {
+    display: block;
+    color: var(--muted);
+    font-style: italic;
+    font-size: 0.9rem;
+    letter-spacing: 0.03em;
+    margin-top: 0.2rem;
+  }
+</style>
