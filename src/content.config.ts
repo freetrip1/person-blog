@@ -35,4 +35,14 @@ const wander = defineCollection({
   }),
 });
 
-export const collections = { blog, projects, wander };
+const now = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "./src/content/now" }),
+  schema: z.object({
+    title: z.string(),
+    updated: z.date(),
+    location: z.string().optional(),
+    note: z.string().optional(),
+  }),
+});
+
+export const collections = { blog, projects, wander, now };

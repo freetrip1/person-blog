@@ -1,0 +1,75 @@
+---
+import Base from "../layouts/Base.astro";
+import ThemeToggle from "../components/ThemeToggle.astro";
+import BottomNav from "../components/BottomNav.astro";
+import { getCollection, render } from "astro:content";
+
+// 约定 now 集合只放一个 current.md，取首条即可。
+const now = (await getCollection("now"))[0];
+const { Content } = now ? await render(now) : { Content: null };
+
+const stamp = now
+  ? `最后更新 · ${now.data.updated.toLocaleDateString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    })}${now.data.location ? ` · ${now.data.location}` : ""}`
+  : "";
+---
+
+<Base title="现在" description="我现在在做什么">
+  <article class="content-page">
+    <div class="page-top">
+      <a href="/" class="back-link">← 返回</a>
+      <ThemeToggle />
+    </div>
+
+    <h1>现在</h1>
+    <p class="subtitle">{now?.data.note ?? "这个月在做什么"}</p>
+
+    {now ? (
+      <div class="now-card page-enter">
+        <div class="prose">
+          <Content />
+        </div>
+        <p class="now-stamp">{stamp}</p>
+      </div>
+    ) : (
+      <div class="now-card page-enter">
+        <div class="prose">
+          <p>这一页暂时空着，很快会更新。</p>
+        </div>
+      </div>
+    )}
+
+    <BottomNav />
+  </article>
+</Base>
+
+<style>
+  /* 夹页便签卡：颜色全走 CSS 变量，暗色自动适配 */
+  .now-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 1.8rem;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.06);
+    /* 轻微倾斜，hover 复正，像一张夹进书里的便签 */
+    transform: rotate(-0.4deg);
+    transition: transform 0.3s ease;
+  }
+
+  .now-card:hover {
+    transform: rotate(0deg);
+  }
+
+  .now-stamp {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 1.5rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid var(--border);
+    font-style: italic;
+  }
+</style>
