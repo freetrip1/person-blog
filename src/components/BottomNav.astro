@@ -24,12 +24,17 @@ const iconMap: Record<string, string> = {
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>',
   Instagram:
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>',
+  RSS:
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6.18 17.82a2.18 2.18 0 1 1-4.36 0 2.18 2.18 0 0 1 4.36 0zM2 7.91v3.05a9.04 9.04 0 0 1 9.04 9.04h3.05A12.09 12.09 0 0 0 2 7.91zM2 2v3.05c8.26 0 14.95 6.69 14.95 14.95H20C20 10.04 11.96 2 2 2z"/></svg>',
 };
 
 // 仅渲染有图标的社交项 + 邮箱。WorldQuant BRAIN 等仅出现在 JSON-LD sameAs（无 icon、非邮箱），暂不展示。
 const socials = siteMeta.social
   .filter((s) => s.label === "电子邮件" || iconMap[s.label])
   .map((s) => ({ label: s.label, href: s.href, icon: iconMap[s.label] }));
+
+// seo-foundation: RSS 订阅入口（站内 feed，非社交身份，不进 JSON-LD sameAs）。
+socials.push({ label: "RSS", href: "/rss.xml", icon: iconMap.RSS });
 ---
 
 <nav class="bottom-nav">
