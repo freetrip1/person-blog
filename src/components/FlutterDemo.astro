@@ -1,0 +1,210 @@
+---
+// FlutterDemo: 可复用的 Flutter Web Demo 嵌入组件（无任何前端框架）。
+// 结构：poster 占位（点击前可见）→ 点击后 lazy 加载 iframe → postMessage 高度自适应。
+// 交互全部走 is:inline IIFE + window 全局守卫 + astro:after-swap 重查（照搬 InkCanvas / VinylPlayer 模式）。
+//
+// postMessage 协议（iframe → 父页面）：
+//   { type: "flutter-demo-height", id: string, height: number /* CSS px */ }
+//
+// 多实例：用 data-demo-id 区分；postMessage 必须带 id 才能命中正确容器。
+export interface Props {
+  /** iframe 加载的 Flutter web 产物入口（如 /demos/sassy-timer/） */
+  src: string;
+  /** 点击前的海报兜底图（如 /demos/sassy-timer-poster.svg） */
+  poster: string;
+  /** demo 标题，用于 aria / 新标签链接文案 */
+  title: string;
+  /**
+   * postMessage 到达前的兜底高宽比（CSS aspect-ratio 语法，默认 "16/9"）。
+   * 收到 flutter-demo-height 后会被显式 height 覆盖；永远不塌成 0。
+   */
+  ratio?: string;
+  /** 多实例时的唯一 id；默认从 src 派生 */
+  id?: string;
+}
+
+const { src, poster, title, ratio = "16/9", id } = Astro.props;
+
+// id 默认取 src 的末段目录名（如 /demos/sassy-timer/ → sassy-timer）
+const demoId =
+  id ?? src.replace(/\/+$/, "").split("/").pop() ?? "flutter-demo";
+---
+
+<div
+  class="flutter-demo"
+  data-demo-id={demoId}
+  data-src={src}
+  style={`--fd-ratio: ${ratio};`}
+>
+  <iframe
+    class="fd-frame"
+    title={title}
+    loading="lazy"
+    hidden
+    referrerpolicy="no-referrer"
+    sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+  ></iframe>
+
+  <button
+    class="fd-poster"
+    type="button"
+    aria-label={`点击运行 ${title}`}
+    style={`background-image: url('${poster}');`}
+  >
+    <span class="fd-play" aria-hidden="true">▶</span>
+    <span class="fd-poster-label">点击运行 Demo</span>
+  </button>
+
+  <a class="fd-open" href={src} target="_blank" rel="noopener noreferrer">
+    在新标签打开 {title} ↗
+  </a>
+</div>
+
+<script is:inline>
+  (function () {
+    // 守卫：跨 View Transition 只装一次全局监听（照搬 ThemeToggle/InkCanvas guard-flag）
+    if (window._flutterDemoInit) {
+      // 已初始化，after-swap 监听已存在；下面 bindAll 会在 swap 后被重新调用。
+      return;
+    }
+    window._flutterDemoInit = true;
+
+    // 点击 poster → lazy 加载 iframe，隐藏 poster（点击后才加载，省流量）
+    document.addEventListener("click", function (e) {
+      var poster = e.target.closest(".fd-poster");
+      if (!poster) return;
+      var demo = poster.closest(".flutter-demo");
+      if (!demo) return;
+      var iframe = demo.querySelector(".fd-frame");
+      var realSrc = demo.getAttribute("data-src");
+      if (!iframe || !realSrc) return;
+      // 已加载过则不重复设置 src
+      if (!iframe.getAttribute("src")) {
+        iframe.setAttribute("src", realSrc);
+      }
+      iframe.removeAttribute("hidden");
+      poster.style.display = "none";
+    });
+
+    // postMessage 高度自适应：按 id 匹配容器，设显式高度（兜底 ratio 不塌成 0）
+    window.addEventListener("message", function (e) {
+      var data = e.data;
+      if (!data || data.type !== "flutter-demo-height") return;
+      if (typeof data.height !== "number" || data.height <= 0) return;
+      var demos = document.querySelectorAll(".flutter-demo");
+      for (var i = 0; i < demos.length; i++) {
+        if (demos[i].getAttribute("data-demo-id") === data.id) {
+          var iframe = demos[i].querySelector(".fd-frame");
+          if (iframe) iframe.style.height = Math.ceil(data.height) + "px";
+        }
+      }
+    });
+
+    // View Transition 后重查/复位：新文档里的 iframe 是全新 DOM（无 src），
+    // poster 默认可见，无需额外操作；保留钩子以便未来需要复位逻辑。
+    function bindAll() {
+      // 当前实现为无状态（事件委托 + window message 监听），swap 后自动生效。
+      // 不把 iframe 实例存进 window 全局——Flutter 重载成本可接受（区别于 VinylPlayer）。
+    }
+    document.addEventListener("astro:after-swap", bindAll);
+    bindAll();
+  })();
+</script>
+
+<style>
+  .flutter-demo {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--card-bg);
+    /* postMessage 到达前的兜底高度：用 aspect-ratio，永不塌成 0 */
+    aspect-ratio: var(--fd-ratio, 16 / 9);
+    min-height: 320px;
+  }
+
+  /* iframe 收到高度后会被设显式 px height（覆盖 aspect-ratio 占位） */
+  .fd-frame {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: var(--card-bg);
+  }
+
+  .fd-poster {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.9rem;
+    background-color: var(--card-bg);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border: none;
+    cursor: pointer;
+    color: var(--text);
+    font-family: "Noto Serif SC", serif;
+  }
+
+  .fd-play {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--bg);
+    font-size: 1.6rem;
+    line-height: 1;
+    padding-left: 4px; /* 视觉居中三角 */
+    box-shadow: 0 4px 16px var(--shadow);
+    transition: transform 0.25s ease;
+  }
+
+  .fd-poster:hover .fd-play {
+    transform: scale(1.08);
+  }
+
+  .fd-poster-label {
+    font-size: 0.95rem;
+    letter-spacing: 0.05em;
+    color: var(--text);
+    background: var(--card-bg);
+    padding: 0.25rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+  }
+
+  .fd-open {
+    position: absolute;
+    right: 0.6rem;
+    bottom: 0.5rem;
+    z-index: 2;
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-decoration: none;
+    background: var(--card-bg);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .fd-open:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  /* 触屏：确保 poster 点击区可用 */
+  @media (hover: none) {
+    .fd-poster {
+      -webkit-tap-highlight-color: transparent;
+    }
+  }
+</style>

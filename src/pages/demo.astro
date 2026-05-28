@@ -1,0 +1,46 @@
+---
+import Base from "../layouts/Base.astro";
+import ThemeToggle from "../components/ThemeToggle.astro";
+import BottomNav from "../components/BottomNav.astro";
+import FlutterDemo from "../components/FlutterDemo.astro";
+// 方案 A：独立 Demo 页（/demo），绕开 Markdown 无法渲染 Astro 组件的限制。
+// 案例文章用 Markdown 链接指向这里。
+---
+
+<Base title="演示" description="在浏览器里直接玩我做的 Flutter 小玩具">
+  <article class="content-page">
+    <div class="page-top">
+      <a href="/work" class="back-link">← 返回作品集</a>
+      <ThemeToggle />
+    </div>
+
+    <h1>Flutter 实时演示</h1>
+    <p class="subtitle">
+      不用装 APK、不用 API Key，点一下就能在浏览器里跑起来。
+    </p>
+
+    <FlutterDemo
+      src="/demos/sassy-timer/"
+      poster="/demos/sassy-timer-poster.svg"
+      title="sassy_timer 毒舌番茄钟"
+      ratio="9 / 16"
+    />
+
+    <p class="demo-note">
+      sassy_timer 是一个会用毒舌台词催你专注的跨平台番茄钟。本地台词逻辑无需联网即可工作；
+      想看它的源码与设计思路，可在新标签打开后体验完整功能。
+    </p>
+
+    <BottomNav />
+  </article>
+</Base>
+
+<style>
+  .demo-note {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    line-height: 1.8;
+    color: var(--muted);
+    font-style: italic;
+  }
+</style>
