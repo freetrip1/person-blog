@@ -1,0 +1,323 @@
+---
+// AlphaPnlChart: 纯 SVG 绘制的 PnL 折线图（无任何前端框架）。
+// 服务端把点数组归一化成 viewBox 坐标，输出 <polyline>/<path>、零线、
+// 首尾日期、峰值与最大回撤标注；颜色全走 CSS 变量，暗色自动适配。
+// 底部 is:inline IIFE 加 hover tooltip，并在 astro:after-swap 后重查 DOM 重绑
+//（照搬 InkCanvas 的 $canvas() 重查 + ThemeToggle 的 guard-flag 模式）。
+export interface Props {
+  points: { date: string; pnl: number }[];
+  /** 可选：用于 tooltip 标题，例如 alpha 标题 */
+  label?: string;
+}
+
+const { points = [], label = "PnL" } = Astro.props;
+
+// viewBox 尺寸（用 viewBox 让 SVG 响应式缩放）
+const W = 720;
+const H = 320;
+const PAD_L = 8;
+const PAD_R = 8;
+const PAD_T = 18;
+const PAD_B = 28;
+const innerW = W - PAD_L - PAD_R;
+const innerH = H - PAD_T - PAD_B;
+
+const hasData = points.length >= 2;
+
+// 归一化坐标
+let pathD = "";
+let zeroY = H - PAD_B; // 零线（PnL=0）位置，默认贴底
+let coords: { x: number; y: number; date: string; pnl: number }[] = [];
+let peakIdx = -1;
+let troughIdx = -1; // 最大回撤的谷底（峰之后的最低点）
+let maxDrawdown = 0;
+
+if (hasData) {
+  const values = points.map((p) => p.pnl);
+  const minV = Math.min(...values, 0); // 把 0 纳入范围，保证零线可见
+  const maxV = Math.max(...values, 0);
+  const range = maxV - minV || 1;
+  const n = points.length;
+
+  coords = points.map((p, i) => {
+    const x = PAD_L + (n === 1 ? innerW / 2 : (i / (n - 1)) * innerW);
+    const y = PAD_T + (1 - (p.pnl - minV) / range) * innerH;
+    return { x, y, date: p.date, pnl: p.pnl };
+  });
+
+  pathD = coords
+    .map((c, i) => `${i === 0 ? "M" : "L"}${c.x.toFixed(1)},${c.y.toFixed(1)}`)
+    .join(" ");
+
+  zeroY = PAD_T + (1 - (0 - minV) / range) * innerH;
+
+  // 峰值 + 最大回撤（峰之后的最大跌幅）
+  let runningPeak = -Infinity;
+  let runningPeakIdx = 0;
+  values.forEach((v, i) => {
+    if (v > runningPeak) {
+      runningPeak = v;
+      runningPeakIdx = i;
+    }
+    const dd = runningPeak - v;
+    if (dd > maxDrawdown) {
+      maxDrawdown = dd;
+      peakIdx = runningPeakIdx;
+      troughIdx = i;
+    }
+  });
+}
+
+const firstDate = hasData ? points[0].date : "";
+const lastDate = hasData ? points[points.length - 1].date : "";
+const dataAttr = hasData ? JSON.stringify(coords) : "[]";
+---
+
+<figure class="alpha-pnl" data-pnl-chart data-label={label}>
+  {
+    hasData ? (
+      <svg
+        class="alpha-pnl-svg"
+        viewBox={`0 0 ${W} ${H}`}
+        preserveAspectRatio="none"
+        role="img"
+        aria-label={`${label} PnL 曲线，从 ${firstDate} 到 ${lastDate}`}
+      >
+        {/* 零线 */}
+        <line
+          class="pnl-zero"
+          x1={PAD_L}
+          x2={W - PAD_R}
+          y1={zeroY}
+          y2={zeroY}
+        />
+        {/* 折线 */}
+        <path class="pnl-line" d={pathD} fill="none" />
+        {/* 最大回撤区间标注 */}
+        {peakIdx >= 0 && troughIdx > peakIdx && (
+          <>
+            <line
+              class="pnl-dd"
+              x1={coords[peakIdx].x}
+              x2={coords[troughIdx].x}
+              y1={coords[peakIdx].y}
+              y2={coords[peakIdx].y}
+            />
+            <circle
+              class="pnl-dot pnl-dot-peak"
+              cx={coords[peakIdx].x}
+              cy={coords[peakIdx].y}
+              r="3"
+            />
+            <circle
+              class="pnl-dot pnl-dot-trough"
+              cx={coords[troughIdx].x}
+              cy={coords[troughIdx].y}
+              r="3"
+            />
+          </>
+        )}
+        {/* hover 指示元素（由脚本控制位置/显隐） */}
+        <line class="pnl-cursor" x1="0" x2="0" y1={PAD_T} y2={H - PAD_B} hidden />
+        <circle class="pnl-hover-dot" r="3.5" cx="0" cy="0" hidden />
+      </svg>
+    ) : (
+      <div class="alpha-pnl-empty">指标暂不可用 · PnL 数据为空</div>
+    )
+  }
+
+  {
+    hasData && (
+      <figcaption class="alpha-pnl-axis">
+        <span class="pnl-date">{firstDate}</span>
+        <span class="pnl-tip" data-pnl-tip aria-live="polite" />
+        <span class="pnl-date">{lastDate}</span>
+      </figcaption>
+    )
+  }
+
+  <script type="application/json" data-pnl-points set:html={dataAttr} />
+</figure>
+
+<script is:inline>
+  (function () {
+    // guard：跨页只装一次全局监听（照搬 ThemeToggle/InkCanvas）
+    if (window._alphaChartInit) {
+      // 已初始化，仅在 after-swap 后重绑（下方 listener 会触发 bindAll）
+      return;
+    }
+    window._alphaChartInit = true;
+
+    function fmt(n) {
+      if (n == null || isNaN(n)) return "—";
+      const abs = Math.abs(n);
+      if (abs >= 1e6) return (n / 1e6).toFixed(2) + "M";
+      if (abs >= 1e3) return (n / 1e3).toFixed(1) + "k";
+      return String(Math.round(n));
+    }
+
+    function bindChart(fig) {
+      if (!fig || fig._bound) return;
+      fig._bound = true;
+
+      var svg = fig.querySelector(".alpha-pnl-svg");
+      var json = fig.querySelector("[data-pnl-points]");
+      var tip = fig.querySelector("[data-pnl-tip]");
+      var cursor = fig.querySelector(".pnl-cursor");
+      var dot = fig.querySelector(".pnl-hover-dot");
+      if (!svg || !json) return;
+
+      var coords;
+      try {
+        coords = JSON.parse(json.textContent || "[]");
+      } catch (e) {
+        coords = [];
+      }
+      if (!coords.length) return;
+
+      var vb = svg.viewBox.baseVal; // viewBox 坐标系（与服务端归一化一致）
+
+      function onMove(evt) {
+        var rect = svg.getBoundingClientRect();
+        var clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+        if (clientX == null) return;
+        // 屏幕 px → viewBox x
+        var vx = ((clientX - rect.left) / rect.width) * vb.width;
+        // 最近点
+        var nearest = coords[0];
+        var best = Infinity;
+        for (var i = 0; i < coords.length; i++) {
+          var d = Math.abs(coords[i].x - vx);
+          if (d < best) {
+            best = d;
+            nearest = coords[i];
+          }
+        }
+        if (cursor) {
+          cursor.setAttribute("x1", nearest.x);
+          cursor.setAttribute("x2", nearest.x);
+          cursor.removeAttribute("hidden");
+        }
+        if (dot) {
+          dot.setAttribute("cx", nearest.x);
+          dot.setAttribute("cy", nearest.y);
+          dot.removeAttribute("hidden");
+        }
+        if (tip) {
+          tip.textContent = nearest.date + " · " + fmt(nearest.pnl);
+        }
+      }
+
+      function onLeave() {
+        if (cursor) cursor.setAttribute("hidden", "");
+        if (dot) dot.setAttribute("hidden", "");
+        if (tip) tip.textContent = "";
+      }
+
+      svg.addEventListener("mousemove", onMove);
+      svg.addEventListener("mouseleave", onLeave);
+      svg.addEventListener("touchmove", onMove, { passive: true });
+      svg.addEventListener("touchend", onLeave);
+    }
+
+    function bindAll() {
+      document.querySelectorAll("[data-pnl-chart]").forEach(bindChart);
+    }
+
+    // View Transition 后重查 DOM 重绑（新文档里的 figure._bound 为 undefined）
+    document.addEventListener("astro:after-swap", bindAll);
+    bindAll();
+  })();
+</script>
+
+<style>
+  .alpha-pnl {
+    margin: 0;
+    width: 100%;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1rem 1rem 0.6rem;
+  }
+
+  .alpha-pnl-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 720 / 320;
+    overflow: visible;
+  }
+
+  .pnl-line {
+    stroke: var(--accent);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .pnl-zero {
+    stroke: var(--border);
+    stroke-width: 1;
+    stroke-dasharray: 4 4;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .pnl-dd {
+    stroke: var(--dots);
+    stroke-width: 1.5;
+    stroke-dasharray: 2 3;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .pnl-dot {
+    stroke: var(--card-bg);
+    stroke-width: 1.5;
+  }
+  .pnl-dot-peak {
+    fill: var(--accent-light, var(--accent));
+  }
+  .pnl-dot-trough {
+    fill: var(--muted);
+  }
+
+  .pnl-cursor {
+    stroke: var(--accent-light, var(--accent));
+    stroke-width: 1;
+    stroke-dasharray: 3 3;
+    vector-effect: non-scaling-stroke;
+  }
+  .pnl-hover-dot {
+    fill: var(--accent);
+    stroke: var(--card-bg);
+    stroke-width: 1.5;
+  }
+
+  .alpha-pnl-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 720 / 320;
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-style: italic;
+  }
+
+  .alpha-pnl-axis {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .pnl-tip {
+    flex: 1;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+    min-height: 1.2em;
+  }
+</style>

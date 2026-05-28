@@ -1,0 +1,437 @@
+---
+import Base from "../../../layouts/Base.astro";
+import ThemeToggle from "../../../components/ThemeToggle.astro";
+import BottomNav from "../../../components/BottomNav.astro";
+import AlphaPnlChart from "../../../components/AlphaPnlChart.astro";
+import { getCollection, render } from "astro:content";
+// BRAIN 数据缓存兜底（构建期静态导入）。由 Agent 会话刷新；
+// BRAIN 宕机 / CI 无凭证时沿用旧快照，构建永不失败。
+import alphas from "../../../data/alphas.json";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("alpha");
+  return entries.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+
+// 按 alphaId join BRAIN 缓存数据；查不到则优雅降级。
+const metrics = alphas.find((x) => x.alphaId === entry.data.alphaId);
+const stats = metrics?.stats;
+const riskNeutral = (metrics as any)?.riskNeutralized as
+  | { sharpe: number; returns: number; maxDrawdown: number; fitness: number; margin: number }
+  | undefined;
+const pnl = metrics?.pnl ?? [];
+
+// 诚实标注：不藏负值 / 高 turnover / 大回撤。缺失显示「—」。
+const pct = (v: number | null | undefined) =>
+  v == null ? "—" : `${(v * 100).toFixed(2)}%`;
+const num = (v: number | null | undefined) =>
+  v == null ? "—" : v.toFixed(2);
+
+const fetchedAt = metrics?.fetchedAt
+  ? new Date(metrics.fetchedAt).toLocaleDateString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    })
+  : "—";
+
+const fields = [
+  { key: "problem", label: "问题", value: entry.data.problem },
+  { key: "intuition", label: "经济直觉", value: entry.data.intuition },
+  { key: "method", label: "方法", value: entry.data.method },
+  // 第 4 字段「指标」由 BRAIN 数据渲染，见模板
+  { key: "biasMitigation", label: "偏差缓解", value: entry.data.biasMitigation },
+  { key: "takeaway", label: "收获", value: entry.data.takeaway },
+];
+---
+
+<Base title={entry.data.title} description={entry.data.problem} ogType="article">
+  <article class="content-page alpha-page">
+    <div class="page-top">
+      <a href="/work" class="back-link">← 返回作品集</a>
+      <ThemeToggle />
+    </div>
+
+    <header class="alpha-header">
+      <span class="alpha-kicker">旗舰 Alpha 案例</span>
+      <h1>{entry.data.title}</h1>
+      {
+        entry.data.tags && (
+          <div class="tags">
+            {entry.data.tags.map((tag) => (
+              <span class="tag">{tag}</span>
+            ))}
+          </div>
+        )
+      }
+    </header>
+
+    <!-- 对页 spread：左 PnL / 右 6 字段 -->
+    <div class="alpha-spread">
+      <!-- 左页：真实 PnL 曲线 -->
+      <section class="alpha-left">
+        <h2 class="alpha-section-title">PnL 曲线</h2>
+        <AlphaPnlChart points={pnl} label={entry.data.title} />
+        {
+          metrics ? (
+            <p class="alpha-source">
+              数据来源 · WorldQuant BRAIN 缓存快照（alphaId <code>{entry.data.alphaId}</code>，
+              {metrics.stage ?? "OS"} 阶段）· 截至 {fetchedAt}
+              <span class="alpha-source-note">
+                指标为构建期缓存的回测数据，未在本次会话中重新拉取实盘验证；如有出入以 BRAIN 平台为准。
+              </span>
+            </p>
+          ) : (
+            <p class="alpha-source alpha-source-warn">
+              指标暂不可用，数据截至 —（alphaId <code>{entry.data.alphaId}</code> 未在缓存中找到）
+            </p>
+          )
+        }
+
+        {
+          metrics && (
+            <dl class="alpha-meta">
+              <div><dt>区域</dt><dd>{metrics.region ?? "—"}</dd></div>
+              <div><dt>宇宙</dt><dd>{metrics.universe ?? "—"}</dd></div>
+              <div><dt>延迟</dt><dd>{metrics.delay != null ? `Delay-${metrics.delay}` : "—"}</dd></div>
+              <div><dt>中性化</dt><dd>{metrics.neutralization ?? "—"}</dd></div>
+            </dl>
+          )
+        }
+      </section>
+
+      <!-- 右页：6 字段骨架 -->
+      <section class="alpha-right">
+        <div class="alpha-field">
+          <h3>{fields[0].label}</h3>
+          <p>{fields[0].value}</p>
+        </div>
+        <div class="alpha-field">
+          <h3>{fields[1].label}</h3>
+          <p>{fields[1].value}</p>
+        </div>
+        <div class="alpha-field">
+          <h3>{fields[2].label}</h3>
+          <p>{fields[2].value}</p>
+          {
+            metrics?.code && (
+              <pre class="alpha-code">{metrics.code}</pre>
+            )
+          }
+        </div>
+
+        <!-- 第 4 字段：诚实标注的真实指标（来自 BRAIN，非手写） -->
+        <div class="alpha-field alpha-field-metrics">
+          <h3>指标（诚实标注）</h3>
+          {
+            stats ? (
+              <div class="alpha-stats">
+                <div class="stat"><span class="stat-v">{num(stats.sharpe)}</span><span class="stat-k">Sharpe</span></div>
+                <div class="stat"><span class="stat-v">{pct(stats.turnover)}</span><span class="stat-k">换手</span></div>
+                <div class="stat"><span class="stat-v stat-bad">{pct(stats.maxDrawdown)}</span><span class="stat-k">最大回撤</span></div>
+                <div class="stat"><span class="stat-v">{pct(stats.returns)}</span><span class="stat-k">年化收益</span></div>
+                <div class="stat"><span class="stat-v">{num(stats.fitness)}</span><span class="stat-k">Fitness</span></div>
+                <div class="stat"><span class="stat-v">{stats.ic == null ? "—" : num(stats.ic)}</span><span class="stat-k">IC</span></div>
+              </div>
+            ) : (
+              <p class="alpha-warn">指标暂不可用，数据截至 —。下方叙事仍如实呈现。</p>
+            )
+          }
+          {
+            riskNeutral && (
+              <p class="alpha-rn">
+                风险中性化后 · Sharpe {num(riskNeutral.sharpe)} · 收益 {pct(riskNeutral.returns)}
+                · 回撤 {pct(riskNeutral.maxDrawdown)} · Fitness {num(riskNeutral.fitness)}
+                <span class="alpha-rn-note">（剥离风格/行业暴露后的压力测试值，与上方原始指标对照看）</span>
+              </p>
+            )
+          }
+        </div>
+
+        <div class="alpha-field">
+          <h3>{fields[3].label}</h3>
+          <p>{fields[3].value}</p>
+        </div>
+        <div class="alpha-field">
+          <h3>{fields[4].label}</h3>
+          <p>{fields[4].value}</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- 年度统计表（如有） -->
+    {
+      metrics?.yearly && metrics.yearly.length > 0 && (
+        <section class="alpha-yearly">
+          <h2 class="alpha-section-title">年度表现</h2>
+          <div class="alpha-table-wrap">
+            <table class="alpha-table">
+              <thead>
+                <tr>
+                  <th>年份</th>
+                  <th>Sharpe</th>
+                  <th>收益</th>
+                  <th>换手</th>
+                  <th>回撤</th>
+                </tr>
+              </thead>
+              <tbody>
+                {metrics.yearly.map((y) => (
+                  <tr>
+                    <td>{y.year}</td>
+                    <td>{num(y.sharpe)}</td>
+                    <td>{pct(y.returns)}</td>
+                    <td>{pct(y.turnover)}</td>
+                    <td>{pct((y as any).drawdown)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )
+    }
+
+    {
+      entry.body && entry.body.trim().length > 0 && (
+        <section class="alpha-notes prose">
+          <Content />
+        </section>
+      )
+    }
+
+    <BottomNav />
+  </article>
+</Base>
+
+<style>
+  .alpha-page {
+    max-width: 980px;
+  }
+
+  .alpha-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .alpha-kicker {
+    display: inline-block;
+    font-family: "Noto Serif SC", serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+  .alpha-header h1 {
+    margin-bottom: 0.8rem;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .tag {
+    font-size: 0.78rem;
+    padding: 0.2rem 0.6rem;
+    background: var(--code-bg);
+    color: var(--muted);
+    border-radius: 3px;
+  }
+
+  /* 对页 spread：宽屏两栏，窄屏单栏堆叠 */
+  .alpha-spread {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 2rem;
+    margin-top: 2rem;
+    align-items: start;
+  }
+  @media (max-width: 720px) {
+    .alpha-spread {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+  }
+
+  .alpha-section-title {
+    font-family: "Noto Serif SC", serif;
+    font-size: 1.05rem;
+    margin: 0 0 0.8rem;
+    color: var(--text);
+  }
+
+  .alpha-source {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 0.6rem;
+    font-style: italic;
+  }
+  .alpha-source-warn {
+    color: var(--accent);
+  }
+  .alpha-source-note {
+    display: block;
+    margin-top: 0.2rem;
+    font-style: normal;
+    font-size: 0.74rem;
+    color: var(--muted);
+    opacity: 0.85;
+  }
+  .alpha-source code,
+  .alpha-field code {
+    font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 0.85em;
+    background: var(--code-bg);
+    padding: 0.05em 0.35em;
+    border-radius: 3px;
+  }
+
+  .alpha-meta {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.4rem 1rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+  .alpha-meta div {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+  }
+  .alpha-meta dt {
+    color: var(--muted);
+  }
+  .alpha-meta dd {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .alpha-field {
+    margin-bottom: 1.6rem;
+  }
+  .alpha-field h3 {
+    font-family: "Noto Serif SC", serif;
+    font-size: 0.95rem;
+    color: var(--accent);
+    margin: 0 0 0.4rem;
+  }
+  .alpha-field p {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--text);
+    margin: 0;
+  }
+
+  .alpha-code {
+    margin-top: 0.7rem;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.7rem 0.9rem;
+    font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--text);
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .alpha-field-metrics {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 1.1rem 1.2rem;
+  }
+  .alpha-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.9rem 0.6rem;
+  }
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  .stat-v {
+    font-family: "Noto Serif SC", serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+  }
+  .stat-bad {
+    color: var(--accent);
+  }
+  .stat-k {
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  .alpha-warn {
+    font-size: 0.88rem;
+    color: var(--muted);
+    font-style: italic;
+    margin: 0;
+  }
+  .alpha-rn {
+    margin: 0.9rem 0 0;
+    padding-top: 0.8rem;
+    border-top: 1px dashed var(--border);
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.6;
+    font-variant-numeric: tabular-nums;
+  }
+  .alpha-rn-note {
+    display: block;
+    font-style: italic;
+    margin-top: 0.2rem;
+  }
+
+  /* 年度统计表 */
+  .alpha-yearly {
+    margin-top: 3rem;
+  }
+  .alpha-table-wrap {
+    overflow-x: auto;
+  }
+  .alpha-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .alpha-table th,
+  .alpha-table td {
+    padding: 0.5rem 0.7rem;
+    text-align: right;
+    border-bottom: 1px solid var(--border);
+  }
+  .alpha-table th:first-child,
+  .alpha-table td:first-child {
+    text-align: left;
+  }
+  .alpha-table thead th {
+    color: var(--muted);
+    font-weight: 600;
+    border-bottom: 1px solid var(--accent);
+  }
+  .alpha-table tbody tr:hover {
+    background: var(--code-bg);
+  }
+
+  .alpha-notes {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+</style>

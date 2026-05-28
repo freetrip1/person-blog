@@ -45,4 +45,24 @@ const now = defineCollection({
   }),
 });
 
-export const collections = { blog, projects, wander, now };
+// work-alpha-cases: 人工叙事真源（6 字段中的 5 段文字 + 元数据）。
+// 第 4 字段「诚实标注的 Sharpe/turnover/回撤/IC」不在此——来自 BRAIN，
+// 构建期由页面按 alphaId join src/data/alphas.json，保证「真数据」。
+const alpha = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "./src/content/alpha" }),
+  schema: z.object({
+    alphaId: z.string(), // BRAIN alpha id，用于 join src/data/alphas.json
+    title: z.string(),
+    date: z.date().optional(),
+    featured: z.boolean().optional(),
+    order: z.number().optional(), // work.astro 排序（getCollection 不排序，需手动 sort）
+    tags: z.array(z.string()).optional(),
+    problem: z.string(), // 问题
+    intuition: z.string(), // 经济直觉
+    method: z.string(), // 方法
+    biasMitigation: z.string(), // 偏差缓解
+    takeaway: z.string(), // 收获
+  }),
+});
+
+export const collections = { blog, projects, wander, now, alpha };

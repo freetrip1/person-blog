@@ -3,8 +3,15 @@ import Base from "../layouts/Base.astro";
 import ThemeToggle from "../components/ThemeToggle.astro";
 import BottomNav from "../components/BottomNav.astro";
 import { getCollection } from "astro:content";
+// BRAIN 缓存数据，用于卡片上一行迷你 Sharpe（按 alphaId join）。
+import alphas from "../data/alphas.json";
 
 const projects = await getCollection("projects");
+
+// 旗舰 Alpha 案例：getCollection 不排序，必须手动 sort（按 order 升序）。
+const alphaCases = (await getCollection("alpha")).sort(
+  (x, y) => (x.data.order ?? 99) - (y.data.order ?? 99),
+);
 ---
 
 <Base title="作品集" description="Freetrip 的项目与作品">
@@ -17,6 +24,38 @@ const projects = await getCollection("projects");
     <h1>作品集</h1>
     <p class="subtitle">精选项目与作品</p>
 
+    {alphaCases.length > 0 && (
+      <section class="alpha-section">
+        <h2 class="section-label">旗舰 Alpha 案例</h2>
+        <p class="section-note">真实 BRAIN 回测数据 · 诚实标注 Sharpe / 换手 / 回撤</p>
+        <div class="work-grid">
+          {alphaCases.map((a) => {
+            const m = alphas.find((x) => x.alphaId === a.data.alphaId);
+            return (
+              <a href={`/work/alpha/${a.id}`} class="work-card alpha-card">
+                <span class="alpha-card-kicker">Alpha</span>
+                <h3>{a.data.title}</h3>
+                <p>{a.data.problem}</p>
+                {(a.data.tags || []).length > 0 && (
+                  <div class="work-tags">
+                    {(a.data.tags || []).map((tag: string) => (
+                      <span class="tag">{tag}</span>
+                    ))}
+                  </div>
+                )}
+                <div class="alpha-card-stat">
+                  {m?.stats
+                    ? `Sharpe ${m.stats.sharpe.toFixed(2)} · 换手 ${(m.stats.turnover * 100).toFixed(1)}% · 回撤 ${(m.stats.maxDrawdown * 100).toFixed(1)}%`
+                    : "指标暂不可用"}
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      </section>
+    )}
+
+    <h2 class="section-label">项目</h2>
     <div class="work-grid">
       {projects.map((project) => (
         <a href={project.data.url || "#"} class="work-card">
@@ -38,12 +77,57 @@ const projects = await getCollection("projects");
 </Base>
 
 <style>
+  .alpha-section {
+    margin-top: 2rem;
+    text-align: left;
+  }
+
+  .section-label {
+    font-family: "Noto Serif SC", serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-align: left;
+    margin: 2.5rem 0 0.3rem;
+  }
+  .alpha-section .section-label {
+    margin-top: 0;
+  }
+
+  .section-note {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin: 0 0 0.5rem;
+    font-style: italic;
+    text-align: left;
+  }
+
   .work-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1.2rem;
     margin-top: 2rem;
     text-align: left;
+  }
+
+  /* alpha 卡片：内链（区别于 projects 外链），加 kicker 与迷你指标行 */
+  .alpha-card {
+    border-left: 3px solid var(--accent);
+  }
+  .alpha-card-kicker {
+    display: inline-block;
+    font-family: "Noto Serif SC", serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-bottom: 0.4rem;
+  }
+  .alpha-card-stat {
+    margin-top: 0.9rem;
+    padding-top: 0.7rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
   }
 
   .work-card {
