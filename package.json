@@ -9,9 +9,16 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "check:alphas": "node scripts/refresh-alphas.js"
   },
   "dependencies": {
-    "astro": "^6.1.9"
+    "@astrojs/rss": "^4.0.18",
+    "@astrojs/sitemap": "^3.7.3",
+    "@astrojs/vercel": "^10.0.8",
+    "@resvg/resvg-js": "^2.6.2",
+    "astro": "^6.1.9",
+    "satori": "^0.26.0",
+    "satori-html": "^0.3.2"
   }
 }

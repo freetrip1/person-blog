@@ -1,0 +1,207 @@
+---
+// i18n: en wander 页，复用 zh wander.astro 结构，lang='en'；集合数据直接复用。
+import Base from "../../layouts/Base.astro";
+import ThemeToggle from "../../components/ThemeToggle.astro";
+import LangToggle from "../../components/LangToggle.astro";
+import BottomNav from "../../components/BottomNav.astro";
+import { useTranslations } from "../../i18n/utils";
+import { getCollection } from "astro:content";
+
+const lang = "en";
+const t = useTranslations(lang);
+
+const items = (await getCollection("wander")).sort(
+  (a, b) => {
+    const aPin = a.data.pinned ? 1 : 0;
+    const bPin = b.data.pinned ? 1 : 0;
+    if (aPin !== bPin) return bPin - aPin;
+    return (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0);
+  }
+);
+---
+
+<Base title={t("nav.wander")} description="Interesting sites Freetrip has collected" lang={lang}>
+  <article class="content-page">
+    <div class="page-top">
+      <a href="/en" class="back-link">{t("back")}</a>
+      <div class="page-top-actions">
+        <LangToggle />
+        <ThemeToggle lang={lang} />
+      </div>
+    </div>
+
+    <h1>{t("nav.wander")}</h1>
+    <p class="subtitle">Good things picked up along the way</p>
+
+    <div class="wander-grid">
+      {items.map((item) => (
+        <a href={item.data.url} target="_blank" rel="noopener" class="wander-card">
+          <div class="wander-thumb">
+            {item.data.image ? (
+              <img
+                src={item.data.image}
+                alt={item.data.title}
+                loading="lazy"
+              />
+            ) : (
+              <div class="wander-placeholder">
+                <span class="wander-thumb-letter">
+                  {item.data.title.charAt(0)}
+                </span>
+                <span class="wander-thumb-domain">
+                  {new URL(item.data.url).hostname}
+                </span>
+              </div>
+            )}
+          </div>
+          <div class="wander-card-body">
+            <div class="wander-card-top">
+              <span class="wander-title">{item.data.title}</span>
+              <span class="wander-arrow">→</span>
+            </div>
+            {item.data.description && (
+              <p class="wander-desc">{item.data.description}</p>
+            )}
+            {item.data.tags && item.data.tags.length > 0 && (
+              <div class="wander-tags">
+                {item.data.tags.map((tag) => (
+                  <span class="tag">{tag}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        </a>
+      ))}
+    </div>
+
+    <BottomNav lang={lang} />
+  </article>
+</Base>
+
+<style>
+  .page-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .wander-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+    margin-top: 2rem;
+    text-align: left;
+  }
+
+  .wander-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--card-bg);
+    overflow: hidden;
+    transition: border-color 0.2s ease, transform 0.25s ease;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .wander-card:hover {
+    border-color: var(--dots);
+    transform: translateY(-2px);
+  }
+
+  .wander-thumb {
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    overflow: hidden;
+    background: var(--border);
+  }
+
+  .wander-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .wander-card:hover .wander-thumb img {
+    transform: scale(1.03);
+  }
+
+  .wander-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3em;
+    transition: background 0.2s ease;
+  }
+
+  .wander-card:hover .wander-placeholder {
+    background: var(--code-bg);
+  }
+
+  .wander-thumb-letter {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--fg);
+    line-height: 1;
+  }
+
+  .wander-thumb-domain {
+    font-size: 0.75rem;
+    color: var(--muted);
+    opacity: 0.6;
+  }
+
+  .wander-card-body {
+    padding: 1.2rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  .wander-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.4em;
+  }
+
+  .wander-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .wander-arrow {
+    font-size: 0.9em;
+    color: var(--muted);
+    transition: transform 0.2s ease;
+  }
+
+  .wander-card:hover .wander-arrow {
+    transform: translateX(4px);
+  }
+
+  .wander-desc {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 0.8em;
+    line-height: 1.5;
+  }
+
+  .wander-tags {
+    margin-top: auto;
+    display: flex;
+    gap: 0.5em;
+  }
+
+  .wander-tags .tag {
+    font-size: 0.75rem;
+    color: var(--accent);
+    border: 1px solid var(--border);
+    padding: 0.1em 0.5em;
+    border-radius: 3px;
+  }
+</style>

@@ -1,0 +1,65 @@
+---
+// i18n: en blog 列表，复用 zh blog/index.astro 结构，lang='en'；只列 lang==='en' 文章。
+import Base from "../../../layouts/Base.astro";
+import ThemeToggle from "../../../components/ThemeToggle.astro";
+import LangToggle from "../../../components/LangToggle.astro";
+import BottomNav from "../../../components/BottomNav.astro";
+import { useTranslations, localizePath } from "../../../i18n/utils";
+import { getCollection } from "astro:content";
+
+const lang = "en";
+const t = useTranslations(lang);
+
+const posts = (await getCollection("blog"))
+  .filter((post) => post.data.lang === "en")
+  .sort((a, b) => (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0));
+---
+
+<Base title={t("nav.blog")} description="Freetrip's blog posts" lang={lang}>
+  <article class="content-page">
+    <div class="page-top">
+      <a href="/en" class="back-link">{t("back")}</a>
+      <div class="page-top-actions">
+        <LangToggle />
+        <ThemeToggle lang={lang} />
+      </div>
+    </div>
+
+    <h1>{t("nav.blog")}</h1>
+    <p class="subtitle">Writing and notes</p>
+
+    {posts.length === 0 && <p class="blog-empty">{t("blog.empty")}</p>}
+    <ul class="archive-list">
+      {posts.map((post) => (
+        <li>
+          <a href={localizePath(`/blog/${post.id}`, lang)} class="archive-item">
+            <span class="archive-date">
+              {post.data.date?.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })}
+            </span>
+            <span class="archive-title">{post.data.title}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    <BottomNav lang={lang} />
+  </article>
+</Base>
+
+<style>
+  .page-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .blog-empty {
+    color: var(--muted);
+    font-family: "Noto Serif SC", serif;
+    font-style: italic;
+    text-align: left;
+  }
+</style>

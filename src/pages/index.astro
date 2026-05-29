@@ -2,16 +2,22 @@
 import Base from "../layouts/Base.astro";
 import TableOfContents from "../components/TableOfContents.astro";
 import ThemeToggle from "../components/ThemeToggle.astro";
+import LangToggle from "../components/LangToggle.astro";
+import { siteMeta } from "../data/siteMeta";
+import { useTranslations } from "../i18n/utils";
+
+const lang = "zh";
+const t = useTranslations(lang);
 ---
 
-<Base title="Freetrip">
+<Base title="Freetrip" lang={lang}>
   <main class="home">
     <header class="home-header page-enter">
       <h1 class="name">Freetrip</h1>
       <p class="identity">
         <span class="hour-mark" id="hour-mark">夜</span>
         <span class="hour-sep">──</span>
-        <span class="identity-text">开发者 / 创作者</span>
+        <span class="identity-text">{siteMeta.spineTaglineShort}</span>
       </p>
     </header>
 
@@ -35,13 +41,16 @@ import ThemeToggle from "../components/ThemeToggle.astro";
     <div class="home-divider page-enter" aria-hidden="true">❧</div>
 
     <section class="home-nav">
-      <TableOfContents />
+      <TableOfContents lang={lang} />
     </section>
 
     <footer class="home-footer page-enter">
       <span class="volume-wrap">
-        <span class="volume-label">第一卷</span>
-        <ThemeToggle />
+        <span class="volume-label">{t("volume")}</span>
+        <span class="home-toggles">
+          <LangToggle />
+          <ThemeToggle lang={lang} />
+        </span>
       </span>
     </footer>
   </main>
@@ -99,6 +108,20 @@ import ThemeToggle from "../components/ThemeToggle.astro";
     letter-spacing: -0.1em;
   }
 
+  /* 短标语较长，窄屏允许换行并缩小，避免挤压 hour-mark / sep */
+  @media (max-width: 480px) {
+    .identity {
+      flex-wrap: wrap;
+      gap: 0.4em;
+      font-size: 0.95rem;
+    }
+
+    .identity-text {
+      flex-basis: 100%;
+      text-align: center;
+    }
+  }
+
   .home-nav {
     flex: 0;
   }
@@ -116,6 +139,12 @@ import ThemeToggle from "../components/ThemeToggle.astro";
     flex-direction: column;
     align-items: center;
     gap: 0.6em;
+  }
+
+  .home-toggles {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
   }
 
   .volume-label {
@@ -156,9 +185,11 @@ import ThemeToggle from "../components/ThemeToggle.astro";
   :global(.toc-list li.page-enter:nth-child(4)) { animation: fadeUp 0.5s ease both; animation-delay: 0.46s; }
   :global(.toc-list li.page-enter:nth-child(5)) { animation: fadeUp 0.5s ease both; animation-delay: 0.54s; }
   :global(.toc-list li.page-enter:nth-child(6)) { animation: fadeUp 0.5s ease both; animation-delay: 0.62s; }
+  :global(.toc-list li.page-enter:nth-child(7)) { animation: fadeUp 0.5s ease both; animation-delay: 0.70s; }
+  :global(.toc-list li.page-enter:nth-child(8)) { animation: fadeUp 0.5s ease both; animation-delay: 0.78s; }
 
   .home-footer.page-enter {
     animation: fadeUp 0.5s ease both;
-    animation-delay: 0.75s;
+    animation-delay: 0.91s;
   }
 </style>

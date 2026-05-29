@@ -1,40 +1,50 @@
 ---
+// i18n: label/volume 走字典(t)，href 经 localizePath；罗马数字与语言无关，保持不变。
+// 注意：此 items 数组与 TableOfContents.astro 重复，改一处必须同步改另一处。
+import { useTranslations, localizePath } from "../i18n/utils";
+import { siteMeta } from "../data/siteMeta";
+
+interface Props {
+  lang?: "zh" | "en";
+}
+const { lang = "zh" } = Astro.props;
+const t = useTranslations(lang);
+
 interface NavItem {
-  label: string;
+  key: Parameters<typeof t>[0];
   href: string;
   page: string;
 }
 
 const items: NavItem[] = [
-  { label: "关于", href: "/about", page: "i" },
-  { label: "作品集", href: "/work", page: "ii" },
-  { label: "想法", href: "/blog", page: "iii" },
-  { label: "漫游", href: "/wander", page: "iv" },
-  { label: "档案", href: "/archive", page: "v" },
-  { label: "友链", href: "/friends", page: "vi" },
+  { key: "nav.about", href: "/about", page: "i" },
+  { key: "nav.work", href: "/work", page: "ii" },
+  { key: "nav.blog", href: "/blog", page: "iii" },
+  { key: "nav.wander", href: "/wander", page: "iv" },
+  { key: "nav.archive", href: "/archive", page: "v" },
+  { key: "nav.friends", href: "/friends", page: "vi" },
+  { key: "nav.now", href: "/now", page: "vii" },
 ];
 
-const socials = [
-  {
-    label: "电子邮件",
-    href: "mailto:2281745673@qq.com",
-  },
-  {
-    label: "GitHub",
-    href: "https://github.com/freetrip1?tab=repositories",
-    icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>',
-  },
-  {
-    label: "Twitter",
-    href: "https://x.com/freetirp",
-    icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>',
-  },
-  {
-    label: "Instagram",
-    href: "https://www.instagram.com/siyuan9159/",
-    icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>',
-  },
-];
+// SVG 图标不入数据文件；按 label 取 icon。无对应图标的项（邮箱）走 email-btn 分支。
+const iconMap: Record<string, string> = {
+  GitHub:
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>',
+  Twitter:
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>',
+  Instagram:
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>',
+  RSS:
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6.18 17.82a2.18 2.18 0 1 1-4.36 0 2.18 2.18 0 0 1 4.36 0zM2 7.91v3.05a9.04 9.04 0 0 1 9.04 9.04h3.05A12.09 12.09 0 0 0 2 7.91zM2 2v3.05c8.26 0 14.95 6.69 14.95 14.95H20C20 10.04 11.96 2 2 2z"/></svg>',
+};
+
+// 仅渲染有图标的社交项 + 邮箱。WorldQuant BRAIN 等仅出现在 JSON-LD sameAs（无 icon、非邮箱），暂不展示。
+const socials = siteMeta.social
+  .filter((s) => s.label === "电子邮件" || iconMap[s.label])
+  .map((s) => ({ label: s.label, href: s.href, icon: iconMap[s.label] }));
+
+// seo-foundation: RSS 订阅入口（站内 feed，非社交身份，不进 JSON-LD sameAs）。
+socials.push({ label: "RSS", href: "/rss.xml", icon: iconMap.RSS });
 ---
 
 <nav class="bottom-nav">
@@ -56,8 +66,8 @@ const socials = [
   <ul class="toc-list">
     {items.map((item) => (
       <li>
-        <a href={item.href} class="toc-item">
-          <span class="toc-label">{item.label}</span>
+        <a href={localizePath(item.href, lang)} class="toc-item">
+          <span class="toc-label">{t(item.key)}</span>
           <span class="toc-dots" />
           <span class="toc-page">{item.page}</span>
         </a>
@@ -66,7 +76,7 @@ const socials = [
   </ul>
 
   <div class="volume-wrap">
-    <span class="volume-label">第一卷</span>
+    <span class="volume-label">{t("volume")}</span>
   </div>
 </nav>
 

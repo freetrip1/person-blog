@@ -1,22 +1,59 @@
 ---
 import Base from "../layouts/Base.astro";
 import ThemeToggle from "../components/ThemeToggle.astro";
+import LangToggle from "../components/LangToggle.astro";
 import BottomNav from "../components/BottomNav.astro";
+import { useTranslations } from "../i18n/utils";
 import { getCollection } from "astro:content";
 
+const lang = "zh";
+const t = useTranslations(lang);
+
 const projects = await getCollection("projects");
+
+// 旗舰 Alpha 案例：getCollection 不排序，必须手动 sort（按 order 升序）。
+const alphaCases = (await getCollection("alpha")).sort(
+  (x, y) => (x.data.order ?? 99) - (y.data.order ?? 99),
+);
 ---
 
-<Base title="作品集" description="Freetrip 的项目与作品">
+<Base title={t("nav.work")} description="Freetrip 的项目与作品" lang={lang}>
   <article class="content-page">
     <div class="page-top">
-      <a href="/" class="back-link">← 返回</a>
-      <ThemeToggle />
+      <a href="/" class="back-link">{t("back")}</a>
+      <div class="page-top-actions">
+        <LangToggle />
+        <ThemeToggle lang={lang} />
+      </div>
     </div>
 
-    <h1>作品集</h1>
+    <h1>{t("nav.work")}</h1>
     <p class="subtitle">精选项目与作品</p>
 
+    {alphaCases.length > 0 && (
+      <section class="alpha-section">
+        <h2 class="section-label">旗舰 Alpha 案例</h2>
+        <p class="section-note">真实回测案例</p>
+        <div class="work-grid">
+          {alphaCases.map((a) => (
+            <a href={`/work/alpha/${a.id}`} class="work-card alpha-card">
+              <span class="alpha-card-kicker">Alpha</span>
+              <h3>{a.data.title}</h3>
+              <p>{a.data.problem}</p>
+              {(a.data.tags || []).length > 0 && (
+                <div class="work-tags">
+                  {(a.data.tags || []).map((tag: string) => (
+                    <span class="tag">{tag}</span>
+                  ))}
+                </div>
+              )}
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <h2 class="section-label">项目</h2>
     <div class="work-grid">
       {projects.map((project) => (
         <a href={project.data.url || "#"} class="work-card">
@@ -33,17 +70,67 @@ const projects = await getCollection("projects");
       ))}
     </div>
 
-    <BottomNav />
+    <BottomNav lang={lang} />
   </article>
 </Base>
 
 <style>
+  .page-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .alpha-section {
+    margin-top: 2rem;
+    text-align: left;
+  }
+
+  .section-label {
+    font-family: "Noto Serif SC", serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-align: left;
+    margin: 2.5rem 0 0.3rem;
+  }
+  .alpha-section .section-label {
+    margin-top: 0;
+  }
+
+  .section-note {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin: 0 0 0.5rem;
+    font-style: italic;
+    text-align: left;
+  }
+
   .work-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1.2rem;
     margin-top: 2rem;
     text-align: left;
+  }
+
+  /* alpha 卡片：内链（区别于 projects 外链），加 kicker 与迷你指标行 */
+  .alpha-card {
+    border-left: 3px solid var(--accent);
+  }
+  .alpha-card-kicker {
+    display: inline-block;
+    font-family: "Noto Serif SC", serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-bottom: 0.4rem;
+  }
+  .alpha-card-stat {
+    margin-top: 0.9rem;
+    padding-top: 0.7rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
   }
 
   .work-card {

@@ -1,0 +1,89 @@
+---
+// i18n: en now 页，复用 zh now.astro 结构，lang='en'；集合数据直接复用，只换外壳语言。
+import Base from "../../layouts/Base.astro";
+import ThemeToggle from "../../components/ThemeToggle.astro";
+import LangToggle from "../../components/LangToggle.astro";
+import BottomNav from "../../components/BottomNav.astro";
+import { useTranslations } from "../../i18n/utils";
+import { getCollection, render } from "astro:content";
+
+const lang = "en";
+const t = useTranslations(lang);
+
+// 约定 now 集合只放一个 current.md，取首条即可。
+const now = (await getCollection("now"))[0];
+const { Content } = now ? await render(now) : { Content: null };
+
+const stamp = now
+  ? `Last updated · ${now.data.updated.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    })}${now.data.location ? ` · ${now.data.location}` : ""}`
+  : "";
+---
+
+<Base title={t("nav.now")} description="What I'm working on now" lang={lang}>
+  <article class="content-page">
+    <div class="page-top">
+      <a href="/en" class="back-link">{t("back")}</a>
+      <div class="page-top-actions">
+        <LangToggle />
+        <ThemeToggle lang={lang} />
+      </div>
+    </div>
+
+    <h1>{t("nav.now")}</h1>
+    <p class="subtitle">{now?.data.note ?? "What I'm up to this month"}</p>
+
+    {now ? (
+      <div class="now-card page-enter">
+        <div class="prose">
+          <Content />
+        </div>
+        <p class="now-stamp">{stamp}</p>
+      </div>
+    ) : (
+      <div class="now-card page-enter">
+        <div class="prose">
+          <p>This page is empty for now — it'll be updated soon.</p>
+        </div>
+      </div>
+    )}
+
+    <BottomNav lang={lang} />
+  </article>
+</Base>
+
+<style>
+  .page-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  /* 夹页便签卡：颜色全走 CSS 变量，暗色自动适配 */
+  .now-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 1.8rem;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.06);
+    /* 轻微倾斜，hover 复正，像一张夹进书里的便签 */
+    transform: rotate(-0.4deg);
+    transition: transform 0.3s ease;
+  }
+
+  .now-card:hover {
+    transform: rotate(0deg);
+  }
+
+  .now-stamp {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 1.5rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid var(--border);
+    font-style: italic;
+  }
+</style>

@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# 域名与 astro.config.mjs 的 site / src/data/siteMeta.ts 的 url 硬编码同步，换域名需手动改。
+# TODO(站主拍板): 确认生产域名后同步此处。
+Sitemap: https://person-blog.vercel.app/sitemap-index.xml

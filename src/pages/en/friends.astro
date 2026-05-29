@@ -1,0 +1,185 @@
+---
+// i18n: en friends 页，复用 zh friends.astro 结构，lang='en'；links.json 数据直接复用。
+import Base from "../../layouts/Base.astro";
+import ThemeToggle from "../../components/ThemeToggle.astro";
+import LangToggle from "../../components/LangToggle.astro";
+import BottomNav from "../../components/BottomNav.astro";
+import Giscus from "../../components/Giscus.astro";
+import links from "../../data/links.json";
+import { useTranslations } from "../../i18n/utils";
+
+const lang = "en";
+const t = useTranslations(lang);
+
+const activeLinks = links.filter((l) => l.status === "active");
+const invalidLinks = links.filter((l) => l.status === "invalid");
+---
+
+<Base title={t("nav.friends")} description="Freetrip's friend links" lang={lang}>
+  <article class="content-page">
+    <div class="page-top">
+      <a href="/en" class="back-link">{t("back")}</a>
+      <div class="page-top-actions">
+        <LangToggle />
+        <ThemeToggle lang={lang} />
+      </div>
+    </div>
+
+    <h1>{t("nav.friends")}</h1>
+    <p class="subtitle">Friends across the web</p>
+
+    <div class="friends-list">
+      {activeLinks.length === 0 && (
+        <a href="#" class="friend-card">
+          <span class="friend-name">To be added</span>
+          <span class="friend-desc">Add your friend here</span>
+          <span class="friend-arrow">→</span>
+        </a>
+      )}
+      {activeLinks.map((link) => (
+        <a href={link.url} target="_blank" rel="noopener" class="friend-card">
+          <span class="friend-name">{link.name}</span>
+          <span class="friend-desc">{link.desc}</span>
+          <span class="friend-arrow">→</span>
+        </a>
+      ))}
+    </div>
+
+    {invalidLinks.length > 0 && (
+      <div class="lost-section">
+        <h2>Lost</h2>
+        <div class="friends-list">
+          {invalidLinks.map((link) => (
+            <div class="friend-card lost">
+              <span class="friend-name">{link.name}</span>
+              <span class="friend-desc">Link is broken</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+
+    <div class="apply-section">
+      <h2>Apply for a link</h2>
+      <p class="apply-hint">Leave a comment below, in this format:</p>
+      <div class="apply-format">
+        <p>Name: your blog name</p>
+        <p>URL: https://your-site.com</p>
+        <p>Description: one line about it</p>
+      </div>
+    </div>
+
+    <Giscus />
+
+    <BottomNav lang={lang} />
+  </article>
+</Base>
+
+<style>
+  .page-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .friends-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+    margin-top: 2rem;
+    text-align: left;
+  }
+
+  .friend-card {
+    display: flex;
+    align-items: center;
+    padding: 1.2rem 1.4rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--card-bg);
+    gap: 1em;
+    transition: border-color 0.2s ease, transform 0.25s ease;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .friend-card:hover {
+    border-color: var(--dots);
+    transform: translateY(-2px);
+  }
+
+  .friend-name {
+    font-size: 1.05rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .friend-desc {
+    flex: 1;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .friend-arrow {
+    font-size: 0.9em;
+    color: var(--muted);
+    transition: transform 0.2s ease;
+  }
+
+  .friend-card:hover .friend-arrow {
+    transform: translateX(4px);
+  }
+
+  .apply-section {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .apply-section h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .apply-hint {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  .apply-format {
+    padding: 1rem 1.2rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  .apply-format p {
+    margin: 0;
+  }
+
+  .lost-section {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px dashed var(--border);
+  }
+
+  .lost-section h2 {
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  .friend-card.lost {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .friend-card.lost .friend-name {
+    text-decoration: line-through;
+  }
+</style>

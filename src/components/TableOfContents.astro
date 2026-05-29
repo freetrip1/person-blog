@@ -1,17 +1,28 @@
 ---
+// i18n: label 走字典(t)，href 经 localizePath；罗马数字 i–viii 与语言无关，保持不变。
+// 注意：此 items 数组与 BottomNav.astro 重复，改一处必须同步改另一处。
+import { useTranslations, localizePath } from "../i18n/utils";
+
+interface Props {
+  lang?: "zh" | "en";
+}
+const { lang = "zh" } = Astro.props;
+const t = useTranslations(lang);
+
 interface NavItem {
-  label: string;
+  key: Parameters<typeof t>[0];
   href: string;
   page: string;
 }
 
 const items: NavItem[] = [
-  { label: "关于", href: "/about", page: "i" },
-  { label: "作品集", href: "/work", page: "ii" },
-  { label: "想法", href: "/blog", page: "iii" },
-  { label: "漫游", href: "/wander", page: "iv" },
-  { label: "档案", href: "/archive", page: "v" },
-  { label: "友链", href: "/friends", page: "vi" },
+  { key: "nav.about", href: "/about", page: "i" },
+  { key: "nav.work", href: "/work", page: "ii" },
+  { key: "nav.blog", href: "/blog", page: "iii" },
+  { key: "nav.wander", href: "/wander", page: "iv" },
+  { key: "nav.archive", href: "/archive", page: "v" },
+  { key: "nav.friends", href: "/friends", page: "vi" },
+  { key: "nav.now", href: "/now", page: "vii" },
 ];
 ---
 
@@ -19,8 +30,8 @@ const items: NavItem[] = [
   <ul class="toc-list">
     {items.map((item) => (
       <li class="page-enter">
-        <a href={item.href} class="toc-item">
-          <span class="toc-label">{item.label}</span>
+        <a href={localizePath(item.href, lang)} class="toc-item">
+          <span class="toc-label">{t(item.key)}</span>
           <span class="toc-dots" />
           <span class="toc-page">{item.page}</span>
         </a>

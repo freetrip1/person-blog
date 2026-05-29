@@ -1,0 +1,77 @@
+---
+// i18n: en archive 页，复用 zh archive.astro 结构，lang='en'；blog 部分只取 en 文章。
+import Base from "../../layouts/Base.astro";
+import ThemeToggle from "../../components/ThemeToggle.astro";
+import LangToggle from "../../components/LangToggle.astro";
+import BottomNav from "../../components/BottomNav.astro";
+import { useTranslations, localizePath } from "../../i18n/utils";
+import { getCollection } from "astro:content";
+
+const lang = "en";
+const t = useTranslations(lang);
+
+// i18n: archive 的 blog 部分只取 en 文章；projects 不分语言两边都展示。
+const posts = (await getCollection("blog"))
+  .filter((p) => p.data.lang === "en")
+  .sort((a, b) => (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0));
+const projects = await getCollection("projects");
+
+const allItems = [
+  ...posts.map((p) => ({
+    title: p.data.title,
+    date: p.data.date,
+    href: localizePath(`/blog/${p.id}`, lang),
+    type: "Post",
+  })),
+  ...projects.map((p) => ({
+    title: p.data.title,
+    date: p.data.date,
+    href: p.data.url || "#",
+    type: "Project",
+  })),
+].sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0));
+---
+
+<Base title={t("nav.archive")} description="Archive of all content" lang={lang}>
+  <article class="content-page">
+    <div class="page-top">
+      <a href="/en" class="back-link">{t("back")}</a>
+      <div class="page-top-actions">
+        <LangToggle />
+        <ThemeToggle lang={lang} />
+      </div>
+    </div>
+
+    <h1>{t("nav.archive")}</h1>
+    <p class="subtitle">Everything, by time</p>
+
+    <ul class="archive-list">
+      {allItems.map((item) => (
+        <li>
+          <a href={item.href} class="archive-item">
+            <span class="archive-date">
+              {item.date?.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })}
+            </span>
+            <span class="archive-title">
+              {item.title} <small>{item.type}</small>
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    <BottomNav lang={lang} />
+  </article>
+</Base>
+
+<style>
+  .page-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+</style>

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920" role="img" aria-label="sassy_timer Demo 海报，点击运行">
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#faf7f1"/>
+      <stop offset="1" stop-color="#f5f0e8"/>
+    </linearGradient>
+    <filter id="noise">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.05"/></feComponentTransfer>
+      <feComposite operator="over" in2="SourceGraphic"/>
+    </filter>
+  </defs>
+
+  <!-- 纸色底 -->
+  <rect width="1080" height="1920" fill="url(#paper)"/>
+  <rect width="1080" height="1920" filter="url(#noise)" opacity="0.5"/>
+
+  <!-- 书脊式细边框 -->
+  <rect x="40" y="40" width="1000" height="1840" fill="none" stroke="#d8cfc0" stroke-width="2"/>
+  <rect x="56" y="56" width="968" height="1808" fill="none" stroke="#d8cfc0" stroke-width="1"/>
+
+  <!-- 页眉 -->
+  <text x="540" y="210" text-anchor="middle" font-family="'Noto Serif SC', serif" font-size="34" letter-spacing="12" fill="#8b7355">FREETRIP · 第一卷</text>
+
+  <!-- 番茄钟环 -->
+  <circle cx="540" cy="720" r="240" fill="none" stroke="#d8cfc0" stroke-width="14"/>
+  <circle cx="540" cy="720" r="240" fill="none" stroke="#8b7355" stroke-width="14" stroke-linecap="round"
+          stroke-dasharray="1130 1508" transform="rotate(-90 540 720)"/>
+  <text x="540" y="700" text-anchor="middle" font-family="'Noto Serif SC', serif" font-size="160" font-weight="700" fill="#2c2c2c">25</text>
+  <text x="540" y="800" text-anchor="middle" font-family="'Noto Sans SC', sans-serif" font-size="46" fill="#6b6b6b">分钟</text>
+
+  <!-- 毒舌台词条 -->
+  <rect x="180" y="1040" width="720" height="120" rx="14" fill="#ebe4d8" stroke="#d8cfc0" stroke-width="1"/>
+  <text x="540" y="1115" text-anchor="middle" font-family="'Noto Sans SC', sans-serif" font-size="40" fill="#2c2c2c">「又想摸鱼？番茄都替你脸红。」</text>
+
+  <!-- 标题 -->
+  <text x="540" y="1340" text-anchor="middle" font-family="'Noto Serif SC', serif" font-size="64" font-weight="700" fill="#2c2c2c">sassy_timer</text>
+  <text x="540" y="1410" text-anchor="middle" font-family="'Noto Sans SC', sans-serif" font-size="40" fill="#6b6b6b">毒舌番茄钟 · Flutter 实时 Demo</text>
+
+  <!-- 播放钮 -->
+  <circle cx="540" cy="1600" r="90" fill="#8b7355"/>
+  <path d="M512 1552 L600 1600 L512 1648 Z" fill="#f5f0e8"/>
+  <text x="540" y="1760" text-anchor="middle" font-family="'Noto Serif SC', serif" font-size="42" letter-spacing="4" fill="#8b7355">▶ 点击运行</text>
+
+  <!-- ❧ 花饰 -->
+  <text x="540" y="1838" text-anchor="middle" font-family="serif" font-size="40" fill="#b5a890">❧</text>
+</svg>

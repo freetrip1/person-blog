@@ -1,12 +1,18 @@
 ---
 import Base from "../layouts/Base.astro";
 import ThemeToggle from "../components/ThemeToggle.astro";
+import LangToggle from "../components/LangToggle.astro";
 import BottomNav from "../components/BottomNav.astro";
+import { useTranslations } from "../i18n/utils";
 import { getCollection } from "astro:content";
 
-const posts = (await getCollection("blog")).sort(
-  (a, b) => (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0)
-);
+const lang = "zh";
+const t = useTranslations(lang);
+
+// i18n: archive 的 blog 部分只取缺省/zh 文章；projects 不分语言。
+const posts = (await getCollection("blog"))
+  .filter((p) => (p.data.lang ?? "zh") === "zh")
+  .sort((a, b) => (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0));
 const projects = await getCollection("projects");
 
 const allItems = [
@@ -25,14 +31,17 @@ const allItems = [
 ].sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0));
 ---
 
-<Base title="档案" description="所有内容的归档">
+<Base title={t("nav.archive")} description="所有内容的归档" lang={lang}>
   <article class="content-page">
     <div class="page-top">
-      <a href="/" class="back-link">← 返回</a>
-      <ThemeToggle />
+      <a href="/" class="back-link">{t("back")}</a>
+      <div class="page-top-actions">
+        <LangToggle />
+        <ThemeToggle lang={lang} />
+      </div>
     </div>
 
-    <h1>档案</h1>
+    <h1>{t("nav.archive")}</h1>
     <p class="subtitle">全部内容，按时间排列</p>
 
     <ul class="archive-list">
@@ -54,6 +63,14 @@ const allItems = [
       ))}
     </ul>
 
-    <BottomNav />
+    <BottomNav lang={lang} />
   </article>
 </Base>
+
+<style>
+  .page-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+</style>

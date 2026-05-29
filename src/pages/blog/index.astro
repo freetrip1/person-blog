@@ -1,24 +1,34 @@
 ---
 import Base from "../../layouts/Base.astro";
 import ThemeToggle from "../../components/ThemeToggle.astro";
+import LangToggle from "../../components/LangToggle.astro";
 import BottomNav from "../../components/BottomNav.astro";
+import { useTranslations } from "../../i18n/utils";
 import { getCollection } from "astro:content";
 
-const posts = (await getCollection("blog")).sort(
-  (a, b) => (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0)
-);
+const lang = "zh";
+const t = useTranslations(lang);
+
+// i18n: zh 列表只列缺省/zh 文章；en 列表在 en/blog/index.astro 过滤 lang==='en'。
+const posts = (await getCollection("blog"))
+  .filter((post) => (post.data.lang ?? "zh") === "zh")
+  .sort((a, b) => (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0));
 ---
 
-<Base title="想法" description="Freetrip 的博客文章">
+<Base title={t("nav.blog")} description="Freetrip 的博客文章" lang={lang}>
   <article class="content-page">
     <div class="page-top">
-      <a href="/" class="back-link">← 返回</a>
-      <ThemeToggle />
+      <a href="/" class="back-link">{t("back")}</a>
+      <div class="page-top-actions">
+        <LangToggle />
+        <ThemeToggle lang={lang} />
+      </div>
     </div>
 
-    <h1>想法</h1>
+    <h1>{t("nav.blog")}</h1>
     <p class="subtitle">文章与笔记</p>
 
+    {posts.length === 0 && <p class="blog-empty">{t("blog.empty")}</p>}
     <ul class="archive-list">
       {posts.map((post) => (
         <li>
@@ -36,6 +46,20 @@ const posts = (await getCollection("blog")).sort(
       ))}
     </ul>
 
-    <BottomNav />
+    <BottomNav lang={lang} />
   </article>
 </Base>
+
+<style>
+  .page-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .blog-empty {
+    color: var(--muted);
+    font-family: "Noto Serif SC", serif;
+    font-style: italic;
+    text-align: left;
+  }
+</style>

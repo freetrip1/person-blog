@@ -1,0 +1,354 @@
+---
+// 「问问关于我」v2：流式 + 钢笔逐笔书写 + 写完后自动淡去。
+// 回答从 /api/ask 流式返回，按书写节奏逐字「落墨」（淡入 + 轻微晕开），末尾跟一支羽毛笔尖
+// （复用站点 cursor-feather 素材）。桌面宽屏(≥1180px)写在左侧页边空白，窄屏降级到输入框下方。
+// 写完停留一段（按长短自适应）后淡出；悬停暂停消失；再问则取消旧的重写。
+// 交互全部 is:inline vanilla + window 守卫，无框架，符合站点铁律。
+---
+
+<section class="askme">
+  <p class="askme-hint">想了解我？在这里问一句，回答会一笔一画写给你看。</p>
+  <form class="askme-form" id="askme-form">
+    <input
+      class="askme-input"
+      id="askme-input"
+      type="text"
+      maxlength="500"
+      placeholder="比如：他做过什么 AI 的工作？"
+      autocomplete="off"
+      aria-label="问问关于我的事"
+    />
+    <button class="askme-btn" type="submit">问</button>
+  </form>
+</section>
+
+<aside class="askme-ink" id="askme-ink" hidden aria-live="polite">
+  <div class="askme-ink-paper">
+    <span class="askme-ink-text" id="askme-ink-text"></span><img
+      class="askme-nib"
+      id="askme-nib"
+      src="/cursor-feather-light.svg"
+      alt=""
+      aria-hidden="true"
+      hidden
+    />
+  </div>
+</aside>
+
+<style>
+  .askme {
+    margin: 2.5rem 0 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+  .askme-hint {
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-style: italic;
+    margin: 0 0 0.8rem;
+  }
+  .askme-form {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .askme-input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--card-bg);
+    color: var(--fg);
+    font-family: inherit;
+    font-size: 0.95rem;
+  }
+  .askme-input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .askme-btn {
+    padding: 0.6rem 1.2rem;
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    background: var(--accent);
+    color: var(--bg);
+    font-family: "Noto Serif SC", serif;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .askme-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  /* 书写区：默认在流内（窄屏）；写完淡出由 .is-fading 触发 */
+  .askme-ink {
+    margin-top: 1.2rem;
+    transition: opacity 1.1s ease;
+  }
+  .askme-ink.is-fading {
+    opacity: 0;
+  }
+  .askme-ink-paper {
+    padding: 1rem 1.2rem;
+    border-left: 3px solid var(--accent);
+    background: var(--card-bg);
+    border-radius: 4px;
+  }
+  .askme-ink-text {
+    font-family: "Noto Serif SC", serif;
+    font-size: 1rem;
+    line-height: 2;
+    color: var(--fg);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  /* 每个字「落墨」：淡入 + 由晕开到清晰 */
+  .ink-char {
+    display: inline;
+    animation: inkIn 0.3s ease both;
+  }
+  @keyframes inkIn {
+    from {
+      opacity: 0;
+      filter: blur(1.5px);
+    }
+    to {
+      opacity: 1;
+      filter: none;
+    }
+  }
+  /* 羽毛笔尖：跟在已写文字末尾，书写时轻微起伏 */
+  .askme-nib {
+    width: 22px;
+    height: 22px;
+    vertical-align: -0.45em;
+    margin-left: 1px;
+    animation: nibBob 0.6s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes nibBob {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-2px) rotate(-3deg);
+    }
+  }
+  .askme-error {
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  /* 桌面宽屏：钉在左侧页边空白，像写在书的页边 */
+  @media (min-width: 1180px) {
+    .askme-ink {
+      position: fixed;
+      top: 16vh;
+      left: 2.2rem;
+      width: 250px;
+      max-height: 68vh;
+      overflow-y: auto;
+      margin-top: 0;
+      z-index: 50;
+    }
+    .askme-ink-paper {
+      background: transparent;
+      border-left: 2px solid var(--dots);
+      box-shadow: none;
+    }
+    .askme-ink-text {
+      font-size: 0.95rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ink-char {
+      animation: none;
+    }
+    .askme-nib {
+      animation: none;
+    }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    if (window._askMeInit) return;
+    window._askMeInit = true;
+
+    // 淡出计时器放在外层，便于「再问一句」时取消上一条的淡出。
+    var dismissT = null;
+    var fadeT = null;
+    function clearDismiss(ink) {
+      if (dismissT) {
+        clearTimeout(dismissT);
+        dismissT = null;
+      }
+      if (fadeT) {
+        clearTimeout(fadeT);
+        fadeT = null;
+      }
+      if (ink) ink.classList.remove("is-fading");
+    }
+
+    function nibSrc() {
+      return document.documentElement.getAttribute("data-theme") === "dark"
+        ? "/cursor-feather-dark.svg"
+        : "/cursor-feather-light.svg";
+    }
+
+    function delayFor(ch) {
+      if (ch === "\n") return 130;
+      if ("，。！？、；：,.!?;:".indexOf(ch) !== -1) return 95;
+      return 30;
+    }
+
+    document.addEventListener("submit", function (e) {
+      var form = e.target.closest("#askme-form");
+      if (!form) return;
+      e.preventDefault();
+
+      var input = document.getElementById("askme-input");
+      var ink = document.getElementById("askme-ink");
+      var textEl = document.getElementById("askme-ink-text");
+      var nib = document.getElementById("askme-nib");
+      var btn = form.querySelector(".askme-btn");
+      if (!input || !ink || !textEl || !nib) return;
+
+      var q = (input.value || "").trim();
+      if (!q) return;
+
+      // 复位：先取消上一条的淡出、去掉 is-fading（在仍隐藏时去掉，避免淡入闪动），再显示。
+      clearDismiss(ink);
+      ink.classList.remove("is-fading");
+      textEl.textContent = "";
+      textEl.classList.remove("askme-error");
+      ink.hidden = false;
+      nib.src = nibSrc();
+      nib.hidden = false;
+      if (btn) btn.disabled = true;
+
+      // 触屏（无 hover）：写在下方、不自动淡出（hover 暂停在触屏失效，留着才不会读一半就消失），
+      // 并把答案滚进视野。桌面行为不变。
+      var noHover = !!(
+        window.matchMedia && window.matchMedia("(hover: none)").matches
+      );
+      if (noHover) {
+        try {
+          ink.scrollIntoView({ behavior: "smooth", block: "center" });
+        } catch (err) {}
+      }
+
+      var queue = [];
+      var streamDone = false;
+      var ticking = false;
+      var finished = false;
+
+      // 写完后按答案长短停留，再淡出；悬停时暂停。
+      function scheduleDismiss() {
+        clearDismiss(ink);
+        var len = textEl.textContent.length;
+        var hold = Math.min(Math.max(len * 120, 5000), 16000);
+        dismissT = setTimeout(function () {
+          ink.classList.add("is-fading");
+          fadeT = setTimeout(function () {
+            ink.hidden = true;
+            ink.classList.remove("is-fading");
+            textEl.textContent = "";
+          }, 1100);
+        }, hold);
+      }
+      ink.onmouseenter = function () {
+        clearDismiss(ink); // 在读，暂停消失
+      };
+      ink.onmouseleave = function () {
+        if (finished) scheduleDismiss();
+      };
+
+      function appendChar(ch) {
+        var span = document.createElement("span");
+        span.className = "ink-char";
+        span.textContent = ch;
+        textEl.appendChild(span);
+      }
+      function lastChar() {
+        var t = textEl.textContent;
+        return t ? t.charAt(t.length - 1) : "";
+      }
+      function tick() {
+        if (queue.length) {
+          appendChar(queue.shift());
+          ink.scrollTop = ink.scrollHeight;
+          setTimeout(tick, delayFor(lastChar()));
+        } else if (!streamDone) {
+          setTimeout(tick, 40);
+        } else {
+          nib.hidden = true; // 收笔
+          if (btn) btn.disabled = false;
+          ticking = false;
+          finished = true;
+          if (!noHover) scheduleDismiss(); // 桌面：停留→淡出；触屏：留着不淡出
+        }
+      }
+      function startTick() {
+        if (ticking) return;
+        ticking = true;
+        tick();
+      }
+
+      function fail(msg) {
+        nib.hidden = true;
+        textEl.classList.add("askme-error");
+        textEl.textContent = msg || "出错了，稍后再试。";
+        if (btn) btn.disabled = false;
+        finished = true;
+        if (!noHover) scheduleDismiss();
+      }
+
+      fetch("/api/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: q }),
+      })
+        .then(function (resp) {
+          if (!resp.ok) {
+            return resp
+              .json()
+              .catch(function () {
+                return {};
+              })
+              .then(function (d) {
+                fail(d.error || "出错了，稍后再试。");
+              });
+          }
+          if (!resp.body || !resp.body.getReader) {
+            return resp.text().then(function (t) {
+              for (var i = 0; i < t.length; i++) queue.push(t.charAt(i));
+              streamDone = true;
+              startTick();
+            });
+          }
+          var reader = resp.body.getReader();
+          var dec = new TextDecoder();
+          startTick();
+          function pump() {
+            return reader.read().then(function (r) {
+              if (r.done) {
+                streamDone = true;
+                return;
+              }
+              var chunk = dec.decode(r.value, { stream: true });
+              for (var i = 0; i < chunk.length; i++) queue.push(chunk.charAt(i));
+              return pump();
+            });
+          }
+          return pump();
+        })
+        .catch(function () {
+          fail("网络出错了，稍后再试。");
+        });
+    });
+  })();
+</script>

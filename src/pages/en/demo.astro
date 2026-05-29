@@ -1,0 +1,60 @@
+---
+// i18n: en demo 页，复用 zh demo.astro 结构，lang='en'；独立 Demo 页绕开 Markdown 限制。
+import Base from "../../layouts/Base.astro";
+import ThemeToggle from "../../components/ThemeToggle.astro";
+import LangToggle from "../../components/LangToggle.astro";
+import BottomNav from "../../components/BottomNav.astro";
+import FlutterDemo from "../../components/FlutterDemo.astro";
+import { useTranslations } from "../../i18n/utils";
+
+const lang = "en";
+const t = useTranslations(lang);
+---
+
+<Base title={t("nav.demo")} description="Play with my Flutter toys right in the browser" lang={lang} noindex={true}>
+  <article class="content-page">
+    <div class="page-top">
+      <a href="/en/work" class="back-link">← Back to work</a>
+      <div class="page-top-actions">
+        <LangToggle />
+        <ThemeToggle lang={lang} />
+      </div>
+    </div>
+
+    <h1>Live Flutter Demo</h1>
+    <p class="subtitle">
+      No APK, no API key — click once and it runs right in your browser.
+    </p>
+
+    <FlutterDemo
+      src="/demos/sassy-timer/index.html"
+      poster="/demos/sassy-timer-poster.svg"
+      title="sassy_timer · a sassy pomodoro timer"
+      ratio="9 / 16"
+    />
+
+    <p class="demo-note">
+      sassy_timer is a cross-platform pomodoro timer that nags you into focusing
+      with sassy one-liners. Its line-picking logic runs entirely on-device, so it
+      works without any network connection. Open it in a new tab to play with the
+      full experience.
+    </p>
+
+    <BottomNav lang={lang} />
+  </article>
+</Base>
+
+<style>
+  .page-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .demo-note {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    line-height: 1.8;
+    color: var(--muted);
+    font-style: italic;
+  }
+</style>

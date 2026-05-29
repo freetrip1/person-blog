@@ -493,6 +493,58 @@ small {
   stroke: currentColor;
 }
 
+/* ── i18n: Lang Toggle（复用 .theme-toggle 视觉，与之并排）── */
+.lang-toggle {
+  /* 文字按钮，宽度自适应；其余尺寸/交互复用 .theme-toggle */
+  width: auto;
+  min-width: 1.5em;
+  font-family: "Noto Serif SC", serif;
+}
+
+.lang-toggle-text {
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+/* ── i18n: 书页边注 marginalia ── */
+/* 桌面：浮于正文右侧的小字栏；窄屏降级为正文内引用块 */
+.marginalia-list {
+  margin-top: 2.5rem;
+  text-align: left;
+}
+
+.marginalia {
+  font-family: "Noto Serif SC", serif;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--muted);
+  border-left: 1px solid var(--dots);
+  padding-left: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+@media (min-width: 681px) {
+  .marginalia-list {
+    float: right;
+    width: 14rem;
+    margin-left: 2rem;
+    margin-top: 0;
+  }
+  .marginalia {
+    font-style: italic;
+  }
+}
+
+@media (max-width: 680px) {
+  .marginalia {
+    border-left: 3px solid var(--accent);
+    background: var(--card-bg);
+    padding: 0.8rem 1rem;
+    border-radius: 0 4px 4px 0;
+  }
+}
+
 /* ── Vinyl Player ── */
 
 .vinyl-wrap {
@@ -676,4 +728,57 @@ small {
 .vc-vol-slider::-moz-range-thumb {
   width: 10px; height: 10px; border-radius: 50%;
   background: var(--fg); border: none; cursor: pointer;
+}
+
+/* ── 案例文章：微调前/后 输入输出对比块 ── */
+.io-diff {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.io-col {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem 1.1rem;
+  background: var(--code-bg);
+}
+
+.io-tag {
+  display: inline-block;
+  font-family: "Noto Serif SC", serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin-bottom: 0.6rem;
+}
+
+/* 极低饱和度红/绿半透明叠色，靠 alpha 叠在底色上，明暗主题自动适配 */
+.io-before {
+  border-left: 3px solid rgba(180, 70, 70, 0.5);
+  background: linear-gradient(rgba(180, 70, 70, 0.06), rgba(180, 70, 70, 0.06)), var(--code-bg);
+}
+
+.io-after {
+  border-left: 3px solid rgba(70, 150, 90, 0.5);
+  background: linear-gradient(rgba(70, 150, 90, 0.06), rgba(70, 150, 90, 0.06)), var(--code-bg);
+}
+
+/* 重置 .prose pre 的深色底色，让上方叠色透出 */
+.io-col pre {
+  margin: 0;
+  background: none;
+  color: var(--fg);
+  padding: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 600px) {
+  .io-diff {
+    grid-template-columns: 1fr;
+  }
 }

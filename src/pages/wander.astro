@@ -1,8 +1,13 @@
 ---
 import Base from "../layouts/Base.astro";
 import ThemeToggle from "../components/ThemeToggle.astro";
+import LangToggle from "../components/LangToggle.astro";
 import BottomNav from "../components/BottomNav.astro";
+import { useTranslations } from "../i18n/utils";
 import { getCollection } from "astro:content";
+
+const lang = "zh";
+const t = useTranslations(lang);
 
 const items = (await getCollection("wander")).sort(
   (a, b) => {
@@ -14,14 +19,17 @@ const items = (await getCollection("wander")).sort(
 );
 ---
 
-<Base title="漫游" description="Freetrip 收藏的有趣网站">
+<Base title={t("nav.wander")} description="Freetrip 收藏的有趣网站" lang={lang}>
   <article class="content-page">
     <div class="page-top">
-      <a href="/" class="back-link">← 返回</a>
-      <ThemeToggle />
+      <a href="/" class="back-link">{t("back")}</a>
+      <div class="page-top-actions">
+        <LangToggle />
+        <ThemeToggle lang={lang} />
+      </div>
     </div>
 
-    <h1>漫游</h1>
+    <h1>{t("nav.wander")}</h1>
     <p class="subtitle">路上捡到的好东西</p>
 
     <div class="wander-grid">
@@ -65,11 +73,16 @@ const items = (await getCollection("wander")).sort(
       ))}
     </div>
 
-    <BottomNav />
+    <BottomNav lang={lang} />
   </article>
 </Base>
 
 <style>
+  .page-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
   .wander-grid {
     display: grid;
     grid-template-columns: 1fr;

@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>sassy_timer · 毒舌番茄钟（占位 Demo）</title>
+    <!--
+      ============================================================
+      占位 Demo（PLACEHOLDER）
+      ------------------------------------------------------------
+      本环境无 Flutter SDK，无法执行 `flutter build web`，因此这里是一个
+      纯 HTML/JS 的自适应骨架占位页，用站点设计语言模拟 sassy_timer，
+      并实现真实的 postMessage 高度上报协议，以便父页面 FlutterDemo
+      的「高度自适应」链路可被完整验证。
+
+      TODO(真实产物接入)：
+        1. 在 D:\code\sassy_timer 执行：
+             flutter build web --release --base-href=/demos/sassy-timer/
+        2. 用 build/web/ 全量覆盖本目录（index.html / main.dart.js /
+           flutter.js / assets/ ...）。
+        3. 把下方 <script id="fd-height-report"> 里的 postMessage 高度上报
+           逻辑移植到 sassy_timer 的 web/index.html（或 flutter_bootstrap.js）
+           末尾——协议保持一致：
+             { type: "flutter-demo-height", id: "sassy-timer", height: <px> }
+      ============================================================
+    -->
+    <style>
+      :root {
+        --bg: #f5f0e8;
+        --card: #faf7f1;
+        --text: #2c2c2c;
+        --muted: #6b6b6b;
+        --accent: #8b7355;
+        --border: #d8cfc0;
+        --track: #ebe4d8;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      .app {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.4rem;
+        padding: 2.2rem 1.4rem 2.6rem;
+        text-align: center;
+      }
+      .kicker {
+        font-family: "Noto Serif SC", serif;
+        letter-spacing: 0.18em;
+        color: var(--accent);
+        font-size: 0.8rem;
+      }
+      .ring-wrap { position: relative; width: 220px; height: 220px; }
+      svg.ring { transform: rotate(-90deg); }
+      .ring-bg { fill: none; stroke: var(--track); stroke-width: 14; }
+      .ring-fg {
+        fill: none; stroke: var(--accent); stroke-width: 14; stroke-linecap: round;
+        transition: stroke-dashoffset 0.5s linear;
+      }
+      .time {
+        position: absolute; inset: 0;
+        display: flex; align-items: center; justify-content: center;
+        font-family: "Noto Serif SC", serif; font-weight: 700; font-size: 3rem;
+        font-variant-numeric: tabular-nums;
+      }
+      .quip {
+        max-width: 380px; min-height: 3.2em;
+        background: var(--track); border: 1px solid var(--border);
+        border-radius: 12px; padding: 0.9rem 1.1rem;
+        color: var(--text); font-size: 0.95rem; line-height: 1.6;
+      }
+      .controls { display: flex; gap: 0.9rem; }
+      button.ctrl {
+        font-family: "Noto Serif SC", serif;
+        border: 1px solid var(--border);
+        background: var(--card);
+        color: var(--text);
+        padding: 0.6rem 1.4rem;
+        border-radius: 999px;
+        cursor: pointer;
+        font-size: 0.95rem;
+        transition: border-color 0.2s ease, color 0.2s ease;
+      }
+      button.ctrl:hover { border-color: var(--accent); color: var(--accent); }
+      button.ctrl.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+      .footer { font-size: 0.75rem; color: var(--muted); font-style: italic; }
+      .placeholder-tag {
+        font-size: 0.7rem; color: var(--muted);
+        border: 1px dashed var(--border); border-radius: 6px;
+        padding: 0.2rem 0.6rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app" id="app">
+      <p class="kicker">FREETRIP · LIVE DEMO</p>
+
+      <div class="ring-wrap">
+        <svg class="ring" width="220" height="220" viewBox="0 0 220 220">
+          <circle class="ring-bg" cx="110" cy="110" r="96"></circle>
+          <circle class="ring-fg" id="ring" cx="110" cy="110" r="96"
+                  stroke-dasharray="603" stroke-dashoffset="0"></circle>
+        </svg>
+        <div class="time" id="time">25:00</div>
+      </div>
+
+      <div class="quip" id="quip">点「开始」试试，看我嘴有多毒。</div>
+
+      <div class="controls">
+        <button class="ctrl primary" id="toggle">开始</button>
+        <button class="ctrl" id="reset">重置</button>
+      </div>
+
+      <p class="footer">sassy_timer · 毒舌番茄钟</p>
+      <span class="placeholder-tag">占位 Demo · 真实 Flutter 产物待接入</span>
+    </main>
+
+    <script>
+      // ---- sassy_timer 占位逻辑（本地台词，无需 API Key） ----
+      var TOTAL = 25 * 60;
+      var remaining = TOTAL;
+      var timerId = null;
+      var R = 96, CIRC = 2 * Math.PI * R; // ≈ 603
+      var quips = [
+        "又想摸鱼？番茄都替你脸红。",
+        "专注一下会死吗？哦，原来你怕。",
+        "时间在走，你的借口也在涨。",
+        "别看我，看你的任务。",
+        "这点专注力，难怪 deadline 追着你跑。",
+        "起来活动？不，先把这 25 分钟熬完。",
+      ];
+      var ring = document.getElementById("ring");
+      var timeEl = document.getElementById("time");
+      var quipEl = document.getElementById("quip");
+      var toggleBtn = document.getElementById("toggle");
+      var resetBtn = document.getElementById("reset");
+
+      function fmt(s) {
+        var m = Math.floor(s / 60), ss = s % 60;
+        return (m < 10 ? "0" : "") + m + ":" + (ss < 10 ? "0" : "") + ss;
+      }
+      function render() {
+        timeEl.textContent = fmt(remaining);
+        var pct = remaining / TOTAL;
+        ring.setAttribute("stroke-dasharray", CIRC);
+        ring.setAttribute("stroke-dashoffset", (CIRC * (1 - pct)).toFixed(1));
+      }
+      function tick() {
+        if (remaining > 0) {
+          remaining--;
+          render();
+          if (remaining % 60 === 0 && remaining > 0) {
+            quipEl.textContent = quips[Math.floor(Math.random() * quips.length)];
+            reportHeight();
+          }
+        } else {
+          stop();
+          quipEl.textContent = "时间到。这次居然真坚持下来了？";
+          reportHeight();
+        }
+      }
+      function start() {
+        if (timerId) return;
+        timerId = setInterval(tick, 1000);
+        toggleBtn.textContent = "暂停";
+        quipEl.textContent = quips[Math.floor(Math.random() * quips.length)];
+        reportHeight();
+      }
+      function stop() {
+        if (timerId) { clearInterval(timerId); timerId = null; }
+        toggleBtn.textContent = "开始";
+      }
+      toggleBtn.addEventListener("click", function () {
+        if (timerId) stop(); else start();
+      });
+      resetBtn.addEventListener("click", function () {
+        stop();
+        remaining = TOTAL;
+        render();
+        quipEl.textContent = "重置好了。这次别再半途而废。";
+        reportHeight();
+      });
+      render();
+    </script>
+
+    <!--
+      ============================================================
+      postMessage 高度上报（移植到真实 Flutter web/index.html 时保持一致）
+      协议：{ type:"flutter-demo-height", id:"sassy-timer", height:<px> }
+      ============================================================
+    -->
+    <script id="fd-height-report">
+      (function () {
+        var DEMO_ID = "sassy-timer";
+        function reportHeight() {
+          var h = Math.ceil(document.documentElement.scrollHeight);
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage(
+              { type: "flutter-demo-height", id: DEMO_ID, height: h },
+              "*"
+            );
+          }
+        }
+        // 暴露给上面的 demo 逻辑调用
+        window.reportHeight = reportHeight;
+        // 初始 + 内容变化时上报
+        window.addEventListener("load", reportHeight);
+        if (window.ResizeObserver) {
+          var ro = new ResizeObserver(function () {
+            // 简单节流
+            clearTimeout(window.__fdT);
+            window.__fdT = setTimeout(reportHeight, 80);
+          });
+          ro.observe(document.body);
+        }
+        setTimeout(reportHeight, 50);
+      })();
+    </script>
+  </body>
+</html>
