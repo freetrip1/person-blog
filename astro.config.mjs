@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import vercel from '@astrojs/vercel';
 
 // https://astro.build/config
 export default defineConfig({
@@ -21,4 +22,7 @@ export default defineConfig({
   // sitemap-index.xml / sitemap-0.xml 仅在 `astro build` 产出，dev 下不生成属正常。
   // 排除 /demo 与 /en/demo：当前是占位 Demo（无真实 Flutter 产物），先软下架不参与收录。
   integrations: [sitemap({ filter: (page) => !page.includes('/demo') })],
+  // 混合模式：页面默认仍是静态预渲染，只有显式 `export const prerender = false`
+  // 的路由（/api/ask）跑在 Vercel serverless 上。adapter 不影响其余静态页。
+  adapter: vercel(),
 });

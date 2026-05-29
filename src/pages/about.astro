@@ -3,6 +3,7 @@ import Base from "../layouts/Base.astro";
 import ThemeToggle from "../components/ThemeToggle.astro";
 import LangToggle from "../components/LangToggle.astro";
 import BottomNav from "../components/BottomNav.astro";
+import AskMe from "../components/AskMe.astro";
 import { siteMeta } from "../data/siteMeta";
 import { useTranslations } from "../i18n/utils";
 
@@ -35,6 +36,8 @@ const t = useTranslations(lang);
       <p>这个网站是我的数字花园，用来记录想法、展示作品、归档记忆。它采用极简的编辑风格设计，像一本翻开的书——安静，但每一页都有分量。</p>
       <p>如果你有任何想法或合作意向，欢迎通过邮件联系我。</p>
     </div>
+
+    <AskMe />
 
     <BottomNav lang={lang} />
   </article>
