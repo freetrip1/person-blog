@@ -84,12 +84,6 @@ export const siteMeta: SiteMeta = {
       href: "https://www.instagram.com/siyuan9159/",
       sameAs: true,
     },
-    {
-      label: "WorldQuant BRAIN",
-      // TODO(站主拍板): WorldQuant 个人页是否公开、最终 URL。占位指向平台首页。
-      href: "https://platform.worldquantbrain.com/",
-      sameAs: true,
-    },
   ],
 };
 

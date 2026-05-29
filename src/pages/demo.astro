@@ -1,17 +1,21 @@
 ---
 import Base from "../layouts/Base.astro";
 import ThemeToggle from "../components/ThemeToggle.astro";
+import LangToggle from "../components/LangToggle.astro";
 import BottomNav from "../components/BottomNav.astro";
 import FlutterDemo from "../components/FlutterDemo.astro";
 // 方案 A：独立 Demo 页（/demo），绕开 Markdown 无法渲染 Astro 组件的限制。
 // 案例文章用 Markdown 链接指向这里。
 ---
 
-<Base title="演示" description="在浏览器里直接玩我做的 Flutter 小玩具">
+<Base title="演示" description="在浏览器里直接玩我做的 Flutter 小玩具" noindex={true}>
   <article class="content-page">
     <div class="page-top">
       <a href="/work" class="back-link">← 返回作品集</a>
-      <ThemeToggle />
+      <div class="page-top-actions">
+        <LangToggle />
+        <ThemeToggle />
+      </div>
     </div>
 
     <h1>Flutter 实时演示</h1>
@@ -20,7 +24,7 @@ import FlutterDemo from "../components/FlutterDemo.astro";
     </p>
 
     <FlutterDemo
-      src="/demos/sassy-timer/"
+      src="/demos/sassy-timer/index.html"
       poster="/demos/sassy-timer-poster.svg"
       title="sassy_timer 毒舌番茄钟"
       ratio="9 / 16"
@@ -36,6 +40,11 @@ import FlutterDemo from "../components/FlutterDemo.astro";
 </Base>
 
 <style>
+  .page-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
   .demo-note {
     margin-top: 1.5rem;
     font-size: 0.9rem;

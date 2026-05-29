@@ -1,12 +1,13 @@
 ---
-import Base from "../layouts/Base.astro";
-import TableOfContents from "../components/TableOfContents.astro";
-import ThemeToggle from "../components/ThemeToggle.astro";
-import LangToggle from "../components/LangToggle.astro";
-import { siteMeta } from "../data/siteMeta";
-import { useTranslations } from "../i18n/utils";
+// i18n: en 首页，复用 zh index.astro 结构，lang='en'，文案走字典。
+import Base from "../../layouts/Base.astro";
+import TableOfContents from "../../components/TableOfContents.astro";
+import ThemeToggle from "../../components/ThemeToggle.astro";
+import LangToggle from "../../components/LangToggle.astro";
+import { siteMeta } from "../../data/siteMeta";
+import { useTranslations } from "../../i18n/utils";
 
-const lang = "zh";
+const lang = "en";
 const t = useTranslations(lang);
 ---
 
@@ -15,9 +16,9 @@ const t = useTranslations(lang);
     <header class="home-header page-enter">
       <h1 class="name">Freetrip</h1>
       <p class="identity">
-        <span class="hour-mark" id="hour-mark">夜</span>
+        <span class="hour-mark" id="hour-mark">Night</span>
         <span class="hour-sep">──</span>
-        <span class="identity-text">{siteMeta.spineTaglineShort}</span>
+        <span class="identity-text">{t("identity")}</span>
       </p>
     </header>
 
@@ -26,10 +27,10 @@ const t = useTranslations(lang);
         function updateHour() {
           var h = new Date().getHours();
           var mark;
-          if (h >= 5 && h < 11) mark = "晨";
-          else if (h >= 11 && h < 17) mark = "午";
-          else if (h >= 17 && h < 21) mark = "暮";
-          else mark = "夜";
+          if (h >= 5 && h < 11) mark = "Morning";
+          else if (h >= 11 && h < 17) mark = "Noon";
+          else if (h >= 17 && h < 21) mark = "Dusk";
+          else mark = "Night";
           var el = document.getElementById("hour-mark");
           if (el) el.textContent = mark;
         }
@@ -108,7 +109,6 @@ const t = useTranslations(lang);
     letter-spacing: -0.1em;
   }
 
-  /* 短标语较长，窄屏允许换行并缩小，避免挤压 hour-mark / sep */
   @media (max-width: 480px) {
     .identity {
       flex-wrap: wrap;

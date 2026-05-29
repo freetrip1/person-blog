@@ -8,6 +8,12 @@ const blog = defineCollection({
     description: z.string().optional(),
     date: z.date().optional(),
     tags: z.array(z.string()).optional(),
+    // i18n：以下三字段均 optional，不破坏现有文章（缺省按 zh）
+    lang: z.enum(["zh", "en"]).optional(), // 缺省按 zh
+    translationKey: z.string().optional(), // zh/en 同篇共享 key，用于互链
+    marginalia: z
+      .array(z.object({ text: z.string(), lang: z.enum(["zh", "en"]) }))
+      .optional(), // 边注式第二语言片段
   }),
 });
 
@@ -59,7 +65,7 @@ const alpha = defineCollection({
     tags: z.array(z.string()).optional(),
     problem: z.string(), // 问题
     intuition: z.string(), // 经济直觉
-    method: z.string(), // 方法
+    method: z.string().optional(), // 方法（不再在页面展示，置为可选）
     biasMitigation: z.string(), // 偏差缓解
     takeaway: z.string(), // 收获
   }),

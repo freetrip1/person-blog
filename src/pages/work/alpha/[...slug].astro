@@ -21,10 +21,6 @@ const { Content } = await render(entry);
 
 // 按 alphaId join BRAIN 缓存数据；查不到则优雅降级。
 const metrics = alphas.find((x) => x.alphaId === entry.data.alphaId);
-const stats = metrics?.stats;
-const riskNeutral = (metrics as any)?.riskNeutralized as
-  | { sharpe: number; returns: number; maxDrawdown: number; fitness: number; margin: number }
-  | undefined;
 const pnl = metrics?.pnl ?? [];
 
 // 诚实标注：不藏负值 / 高 turnover / 大回撤。缺失显示「—」。
@@ -78,21 +74,10 @@ const fields = [
       <section class="alpha-left">
         <h2 class="alpha-section-title">PnL 曲线</h2>
         <AlphaPnlChart points={pnl} label={entry.data.title} />
-        {
-          metrics ? (
-            <p class="alpha-source">
-              数据来源 · WorldQuant BRAIN 缓存快照（alphaId <code>{entry.data.alphaId}</code>，
-              {metrics.stage ?? "OS"} 阶段）· 截至 {fetchedAt}
-              <span class="alpha-source-note">
-                指标为构建期缓存的回测数据，未在本次会话中重新拉取实盘验证；如有出入以 BRAIN 平台为准。
-              </span>
-            </p>
-          ) : (
-            <p class="alpha-source alpha-source-warn">
-              指标暂不可用，数据截至 —（alphaId <code>{entry.data.alphaId}</code> 未在缓存中找到）
-            </p>
-          )
-        }
+
+        {metrics && (
+          <p class="alpha-source">指标为构建期缓存的回测数据，未在本次会话中重新拉取实盘验证。</p>
+        )}
 
         {
           metrics && (
@@ -116,44 +101,6 @@ const fields = [
           <h3>{fields[1].label}</h3>
           <p>{fields[1].value}</p>
         </div>
-        <div class="alpha-field">
-          <h3>{fields[2].label}</h3>
-          <p>{fields[2].value}</p>
-          {
-            metrics?.code && (
-              <pre class="alpha-code">{metrics.code}</pre>
-            )
-          }
-        </div>
-
-        <!-- 第 4 字段：诚实标注的真实指标（来自 BRAIN，非手写） -->
-        <div class="alpha-field alpha-field-metrics">
-          <h3>指标（诚实标注）</h3>
-          {
-            stats ? (
-              <div class="alpha-stats">
-                <div class="stat"><span class="stat-v">{num(stats.sharpe)}</span><span class="stat-k">Sharpe</span></div>
-                <div class="stat"><span class="stat-v">{pct(stats.turnover)}</span><span class="stat-k">换手</span></div>
-                <div class="stat"><span class="stat-v stat-bad">{pct(stats.maxDrawdown)}</span><span class="stat-k">最大回撤</span></div>
-                <div class="stat"><span class="stat-v">{pct(stats.returns)}</span><span class="stat-k">年化收益</span></div>
-                <div class="stat"><span class="stat-v">{num(stats.fitness)}</span><span class="stat-k">Fitness</span></div>
-                <div class="stat"><span class="stat-v">{stats.ic == null ? "—" : num(stats.ic)}</span><span class="stat-k">IC</span></div>
-              </div>
-            ) : (
-              <p class="alpha-warn">指标暂不可用，数据截至 —。下方叙事仍如实呈现。</p>
-            )
-          }
-          {
-            riskNeutral && (
-              <p class="alpha-rn">
-                风险中性化后 · Sharpe {num(riskNeutral.sharpe)} · 收益 {pct(riskNeutral.returns)}
-                · 回撤 {pct(riskNeutral.maxDrawdown)} · Fitness {num(riskNeutral.fitness)}
-                <span class="alpha-rn-note">（剥离风格/行业暴露后的压力测试值，与上方原始指标对照看）</span>
-              </p>
-            )
-          }
-        </div>
-
         <div class="alpha-field">
           <h3>{fields[3].label}</h3>
           <p>{fields[3].value}</p>

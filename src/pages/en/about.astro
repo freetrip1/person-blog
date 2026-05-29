@@ -1,0 +1,58 @@
+---
+// i18n: en about 页，复用 zh about.astro 结构，lang='en'，外壳走字典；正文为英文。
+import Base from "../../layouts/Base.astro";
+import ThemeToggle from "../../components/ThemeToggle.astro";
+import LangToggle from "../../components/LangToggle.astro";
+import BottomNav from "../../components/BottomNav.astro";
+import { siteMeta } from "../../data/siteMeta";
+import { useTranslations } from "../../i18n/utils";
+
+const lang = "en";
+const t = useTranslations(lang);
+---
+
+<Base title={t("nav.about")} description="About Freetrip" lang={lang}>
+  <article class="content-page">
+    <div class="page-top">
+      <a href="/en" class="back-link">{t("back")}</a>
+      <div class="page-top-actions">
+        <LangToggle />
+        <ThemeToggle lang={lang} />
+      </div>
+    </div>
+
+    <h1>{t("nav.about")}</h1>
+    <p class="subtitle">A few things about me</p>
+
+    <p class="spine-tagline">
+      {siteMeta.spineTaglineEN}
+    </p>
+
+    <div class="prose">
+      {/* TODO(站主拍板): 英文散文需站主提供译文，此处为初译占位。 */}
+      <p>Hi, I'm Freetrip.</p>
+      <p>Someone with a lasting passion for design, code, and creation. I believe good design is restrained, good code is simple, and good writing is honest.</p>
+      <p>Over the years I've moved between a few roles: training AI models, digging for factors in quant research, building small tools with Flutter, and always keeping up the habit of writing. Less a linear résumé than different outlets for the same curiosity.</p>
+      <p>This site is my digital garden — a place to record ideas, show work, and archive memories. It's built in a minimal editorial style, like an open book: quiet, but every page carries weight.</p>
+      <p>If you have an idea or want to collaborate, reach me by email.</p>
+    </div>
+
+    <BottomNav lang={lang} />
+  </article>
+</Base>
+
+<style>
+  .page-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .spine-tagline {
+    font-family: "Noto Serif SC", serif;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    font-size: 1.05rem;
+    margin: 0.4rem 0 1.8rem;
+    line-height: 1.7;
+  }
+</style>

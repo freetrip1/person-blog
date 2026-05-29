@@ -1,24 +1,24 @@
 ---
-import Base from "../../layouts/Base.astro";
-import ThemeToggle from "../../components/ThemeToggle.astro";
-import LangToggle from "../../components/LangToggle.astro";
-import BottomNav from "../../components/BottomNav.astro";
-import { useTranslations } from "../../i18n/utils";
+// i18n: en blog 列表，复用 zh blog/index.astro 结构，lang='en'；只列 lang==='en' 文章。
+import Base from "../../../layouts/Base.astro";
+import ThemeToggle from "../../../components/ThemeToggle.astro";
+import LangToggle from "../../../components/LangToggle.astro";
+import BottomNav from "../../../components/BottomNav.astro";
+import { useTranslations, localizePath } from "../../../i18n/utils";
 import { getCollection } from "astro:content";
 
-const lang = "zh";
+const lang = "en";
 const t = useTranslations(lang);
 
-// i18n: zh 列表只列缺省/zh 文章；en 列表在 en/blog/index.astro 过滤 lang==='en'。
 const posts = (await getCollection("blog"))
-  .filter((post) => (post.data.lang ?? "zh") === "zh")
+  .filter((post) => post.data.lang === "en")
   .sort((a, b) => (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0));
 ---
 
-<Base title={t("nav.blog")} description="Freetrip 的博客文章" lang={lang}>
+<Base title={t("nav.blog")} description="Freetrip's blog posts" lang={lang}>
   <article class="content-page">
     <div class="page-top">
-      <a href="/" class="back-link">{t("back")}</a>
+      <a href="/en" class="back-link">{t("back")}</a>
       <div class="page-top-actions">
         <LangToggle />
         <ThemeToggle lang={lang} />
@@ -26,18 +26,18 @@ const posts = (await getCollection("blog"))
     </div>
 
     <h1>{t("nav.blog")}</h1>
-    <p class="subtitle">文章与笔记</p>
+    <p class="subtitle">Writing and notes</p>
 
     {posts.length === 0 && <p class="blog-empty">{t("blog.empty")}</p>}
     <ul class="archive-list">
       {posts.map((post) => (
         <li>
-          <a href={`/blog/${post.id}`} class="archive-item">
+          <a href={localizePath(`/blog/${post.id}`, lang)} class="archive-item">
             <span class="archive-date">
-              {post.data.date?.toLocaleDateString("zh-CN", {
+              {post.data.date?.toLocaleDateString("en-US", {
                 year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
+                month: "short",
+                day: "numeric",
               })}
             </span>
             <span class="archive-title">{post.data.title}</span>

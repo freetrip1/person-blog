@@ -4,6 +4,8 @@ import InkCanvas from "../components/InkCanvas.astro";
 import { ClientRouter } from "astro:transitions";
 import { siteMeta, buildPersonJsonLd } from "../data/siteMeta";
 import { resolveOgRoute } from "../lib/og-routes";
+import { ui } from "../i18n/ui";
+import { stripLangPrefix, localizePath } from "../i18n/utils";
 
 interface Props {
   title: string;
@@ -16,19 +18,35 @@ interface Props {
   ogImage?: string;
   // seo-foundation: true 时输出 robots noindex（如 404 页）。
   noindex?: boolean;
+  // i18n: 当前页面语言（zh 根路径 / en /en 前缀），默认 zh。
+  lang?: "zh" | "en";
 }
 
 const {
   title,
-  description = siteMeta.description,
   ogType = "website",
   image = "/og-default.png",
   ogImage,
   noindex = false,
+  lang = "zh",
 } = Astro.props;
 
+// i18n: 默认 description 走当前语言字典；<html lang> 输出 zh-CN / en。
+const description = Astro.props.description ?? ui[lang]["site.desc"];
+const htmlLang = lang === "en" ? "en" : "zh-CN";
+
+// i18n: hreflang 互链 —— 从当前 URL 推导逻辑路径，生成 zh / en 成对绝对 URL。
+const logicalPath = stripLangPrefix(Astro.url.pathname);
+const hreflangs = Astro.site
+  ? [
+      { hreflang: "zh-CN", href: new URL(localizePath(logicalPath, "zh"), Astro.site).href },
+      { hreflang: "en", href: new URL(localizePath(logicalPath, "en"), Astro.site).href },
+      { hreflang: "x-default", href: new URL(localizePath(logicalPath, "zh"), Astro.site).href },
+    ]
+  : [];
+
 // og-cards: OG 图解析优先级 —— 显式 ogImage > 按路径推导的动态卡 /og/<slug>.png > image 兜底。
-const derivedOgSlug = resolveOgRoute(Astro.url.pathname);
+const derivedOgSlug = resolveOgRoute(logicalPath);
 const ogCardPath =
   ogImage ?? (derivedOgSlug ? `/og/${derivedOgSlug}.png` : image);
 
@@ -51,12 +69,17 @@ const jsonLd = buildPersonJsonLd(Astro.site ? Astro.site.href : siteMeta.url);
 ---
 
 <!doctype html>
-<html lang="zh-CN">
+<html lang={htmlLang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+
+    {/* i18n: hreflang 双语互链 */}
+    {hreflangs.map((h) => (
+      <link rel="alternate" hreflang={h.hreflang} href={h.href} />
+    ))}
 
     {/* seo-foundation: 可选 noindex（如 404 页），默认不输出 */}
     {noindex && <meta name="robots" content="noindex, nofollow" />}
@@ -115,6 +138,36 @@ const jsonLd = buildPersonJsonLd(Astro.site ? Astro.site.href : siteMeta.url);
             e.newDocument.documentElement.removeAttribute("data-theme");
           }
         });
+      })();
+    </script>
+    <script is:inline>
+      // i18n: 语言 cookie 同步 + 跨 View Transition 保持 <html lang>。
+      // 对齐 theme 脚本：用 window._langInit 守卫，避免重复绑定。
+      (function () {
+        if (window._langInit) return;
+        window._langInit = true;
+
+        // 把当前页面 SSR 渲染出的 <html lang> 反写进 cookie，记忆用户语言偏好。
+        function syncLangCookie() {
+          try {
+            var htmlLang = document.documentElement.getAttribute("lang") || "zh-CN";
+            var lang = htmlLang.indexOf("en") === 0 ? "en" : "zh";
+            document.cookie = "lang=" + lang + ";path=/;max-age=31536000;samesite=lax";
+          } catch (e) {}
+        }
+
+        syncLangCookie();
+
+        // 切页前：把新文档自身的 lang 复核进 newDocument，避免语言闪回。
+        document.addEventListener("astro:before-swap", function (e) {
+          try {
+            var newLang = e.newDocument.documentElement.getAttribute("lang") || "zh-CN";
+            e.newDocument.documentElement.setAttribute("lang", newLang);
+          } catch (err) {}
+        });
+
+        // 切页后：复核 cookie 与当前页面语言一致。
+        document.addEventListener("astro:after-swap", syncLangCookie);
       })();
     </script>
     <script is:inline src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>

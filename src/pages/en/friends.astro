@@ -1,23 +1,24 @@
 ---
-import Base from "../layouts/Base.astro";
-import ThemeToggle from "../components/ThemeToggle.astro";
-import LangToggle from "../components/LangToggle.astro";
-import BottomNav from "../components/BottomNav.astro";
-import Giscus from "../components/Giscus.astro";
-import { useTranslations } from "../i18n/utils";
-import links from "../data/links.json";
+// i18n: en friends 页，复用 zh friends.astro 结构，lang='en'；links.json 数据直接复用。
+import Base from "../../layouts/Base.astro";
+import ThemeToggle from "../../components/ThemeToggle.astro";
+import LangToggle from "../../components/LangToggle.astro";
+import BottomNav from "../../components/BottomNav.astro";
+import Giscus from "../../components/Giscus.astro";
+import links from "../../data/links.json";
+import { useTranslations } from "../../i18n/utils";
 
-const lang = "zh";
+const lang = "en";
 const t = useTranslations(lang);
 
 const activeLinks = links.filter((l) => l.status === "active");
 const invalidLinks = links.filter((l) => l.status === "invalid");
 ---
 
-<Base title={t("nav.friends")} description="Freetrip 的友情链接" lang={lang}>
+<Base title={t("nav.friends")} description="Freetrip's friend links" lang={lang}>
   <article class="content-page">
     <div class="page-top">
-      <a href="/" class="back-link">{t("back")}</a>
+      <a href="/en" class="back-link">{t("back")}</a>
       <div class="page-top-actions">
         <LangToggle />
         <ThemeToggle lang={lang} />
@@ -25,13 +26,13 @@ const invalidLinks = links.filter((l) => l.status === "invalid");
     </div>
 
     <h1>{t("nav.friends")}</h1>
-    <p class="subtitle">互联网上的朋友们</p>
+    <p class="subtitle">Friends across the web</p>
 
     <div class="friends-list">
       {activeLinks.length === 0 && (
         <a href="#" class="friend-card">
-          <span class="friend-name">待添加</span>
-          <span class="friend-desc">在这里添加你的朋友</span>
+          <span class="friend-name">To be added</span>
+          <span class="friend-desc">Add your friend here</span>
           <span class="friend-arrow">→</span>
         </a>
       )}
@@ -46,12 +47,12 @@ const invalidLinks = links.filter((l) => l.status === "invalid");
 
     {invalidLinks.length > 0 && (
       <div class="lost-section">
-        <h2>失联</h2>
+        <h2>Lost</h2>
         <div class="friends-list">
           {invalidLinks.map((link) => (
             <div class="friend-card lost">
               <span class="friend-name">{link.name}</span>
-              <span class="friend-desc">链接已断开</span>
+              <span class="friend-desc">Link is broken</span>
             </div>
           ))}
         </div>
@@ -59,12 +60,12 @@ const invalidLinks = links.filter((l) => l.status === "invalid");
     )}
 
     <div class="apply-section">
-      <h2>申请友链</h2>
-      <p class="apply-hint">在下方评论区留言，格式如下：</p>
+      <h2>Apply for a link</h2>
+      <p class="apply-hint">Leave a comment below, in this format:</p>
       <div class="apply-format">
-        <p>名称：你的博客名</p>
-        <p>地址：https://your-site.com</p>
-        <p>描述：一句话介绍</p>
+        <p>Name: your blog name</p>
+        <p>URL: https://your-site.com</p>
+        <p>Description: one line about it</p>
       </div>
     </div>
 

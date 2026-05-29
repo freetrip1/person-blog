@@ -6,17 +6,7 @@
     "universe": "TOP300",
     "delay": 1,
     "neutralization": "SUBINDUSTRY",
-    "code": "ts_scale(winsorize(ts_backfill(vec_avg(analyst_consensus_high_eps), 120), std=4), 66)",
     "stage": "OS",
-    "stats": {
-      "sharpe": 1.61,
-      "turnover": 0.0773,
-      "maxDrawdown": 0.1279,
-      "fitness": 1.68,
-      "returns": 0.1365,
-      "ic": null,
-      "margin": 0.003531
-    },
     "yearly": [
       {
         "year": 2014,
@@ -575,24 +565,7 @@
     "universe": "TOP2500",
     "delay": 1,
     "neutralization": "NONE",
-    "code": "a=combo_a(alpha);\nrank(a)*ts_rank(a,5)",
     "stage": "OS",
-    "stats": {
-      "sharpe": 4.08,
-      "turnover": 0.0869,
-      "maxDrawdown": 0.0254,
-      "fitness": 4.05,
-      "returns": 0.1234,
-      "ic": null,
-      "margin": 0.002841
-    },
-    "riskNeutralized": {
-      "sharpe": 3.6,
-      "returns": 0.0653,
-      "maxDrawdown": 0.0219,
-      "fitness": 2.6,
-      "margin": 0.001503
-    },
     "yearly": [
       {
         "year": 2014,

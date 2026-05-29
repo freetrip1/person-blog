@@ -24,10 +24,13 @@ import ThemeToggle from "../components/ThemeToggle.astro";
 
         <h1 class="nf-numeral">404</h1>
         <p class="nf-message">这一页似乎被人轻轻撕走了。</p>
-        <p class="nf-aside">也许它从未存在，也许只是被夹在了别处。</p>
+        <p class="nf-aside">This page seems to have been gently torn out.</p>
 
         <p class="nf-tip">
-          要不要 <a href="/blog">随便翻一页</a>？
+          {/* i18n: 静态单文件无法分流，并列中英双语链接 */}
+          <a href="/">← 回到目录</a>
+          <span class="nf-sep">·</span>
+          <a href="/en">Home →</a>
         </p>
       </div>
     </article>
@@ -134,6 +137,12 @@ import ThemeToggle from "../components/ThemeToggle.astro";
     color: var(--muted);
     opacity: 0.7;
     margin-top: 3rem;
+  }
+
+  .nf-sep {
+    margin: 0 0.5em;
+    color: var(--muted);
+    opacity: 0.6;
   }
 
   .nf-tip a {

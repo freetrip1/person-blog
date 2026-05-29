@@ -1,17 +1,18 @@
 ---
-import Base from "../layouts/Base.astro";
-import ThemeToggle from "../components/ThemeToggle.astro";
-import LangToggle from "../components/LangToggle.astro";
-import BottomNav from "../components/BottomNav.astro";
-import { useTranslations } from "../i18n/utils";
+// i18n: en archive 页，复用 zh archive.astro 结构，lang='en'；blog 部分只取 en 文章。
+import Base from "../../layouts/Base.astro";
+import ThemeToggle from "../../components/ThemeToggle.astro";
+import LangToggle from "../../components/LangToggle.astro";
+import BottomNav from "../../components/BottomNav.astro";
+import { useTranslations, localizePath } from "../../i18n/utils";
 import { getCollection } from "astro:content";
 
-const lang = "zh";
+const lang = "en";
 const t = useTranslations(lang);
 
-// i18n: archive 的 blog 部分只取缺省/zh 文章；projects 不分语言。
+// i18n: archive 的 blog 部分只取 en 文章；projects 不分语言两边都展示。
 const posts = (await getCollection("blog"))
-  .filter((p) => (p.data.lang ?? "zh") === "zh")
+  .filter((p) => p.data.lang === "en")
   .sort((a, b) => (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0));
 const projects = await getCollection("projects");
 
@@ -19,22 +20,22 @@ const allItems = [
   ...posts.map((p) => ({
     title: p.data.title,
     date: p.data.date,
-    href: `/blog/${p.id}`,
-    type: "文章",
+    href: localizePath(`/blog/${p.id}`, lang),
+    type: "Post",
   })),
   ...projects.map((p) => ({
     title: p.data.title,
     date: p.data.date,
     href: p.data.url || "#",
-    type: "项目",
+    type: "Project",
   })),
 ].sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0));
 ---
 
-<Base title={t("nav.archive")} description="所有内容的归档" lang={lang}>
+<Base title={t("nav.archive")} description="Archive of all content" lang={lang}>
   <article class="content-page">
     <div class="page-top">
-      <a href="/" class="back-link">{t("back")}</a>
+      <a href="/en" class="back-link">{t("back")}</a>
       <div class="page-top-actions">
         <LangToggle />
         <ThemeToggle lang={lang} />
@@ -42,17 +43,17 @@ const allItems = [
     </div>
 
     <h1>{t("nav.archive")}</h1>
-    <p class="subtitle">全部内容，按时间排列</p>
+    <p class="subtitle">Everything, by time</p>
 
     <ul class="archive-list">
       {allItems.map((item) => (
         <li>
           <a href={item.href} class="archive-item">
             <span class="archive-date">
-              {item.date?.toLocaleDateString("zh-CN", {
+              {item.date?.toLocaleDateString("en-US", {
                 year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
+                month: "short",
+                day: "numeric",
               })}
             </span>
             <span class="archive-title">

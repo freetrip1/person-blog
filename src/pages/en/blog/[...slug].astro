@@ -1,15 +1,15 @@
 ---
-import Base from "../../layouts/Base.astro";
-import ThemeToggle from "../../components/ThemeToggle.astro";
-import LangToggle from "../../components/LangToggle.astro";
-import BottomNav from "../../components/BottomNav.astro";
-import { useTranslations, localizePath } from "../../i18n/utils";
+// i18n: en 文章动态路由，复用 zh blog/[...slug].astro 结构；getStaticPaths 只取 lang==='en' 文章。
+import Base from "../../../layouts/Base.astro";
+import ThemeToggle from "../../../components/ThemeToggle.astro";
+import LangToggle from "../../../components/LangToggle.astro";
+import BottomNav from "../../../components/BottomNav.astro";
+import { useTranslations, localizePath } from "../../../i18n/utils";
 import { getCollection, render } from "astro:content";
 
 export async function getStaticPaths() {
-  // i18n: zh 文章动态路由 —— 只取缺省/zh 文章（en 文章走 en/blog/[...slug].astro）。
   const posts = (await getCollection("blog")).filter(
-    (post) => (post.data.lang ?? "zh") === "zh"
+    (post) => post.data.lang === "en"
   );
   return posts.map((post) => ({
     params: { slug: post.id },
@@ -17,24 +17,23 @@ export async function getStaticPaths() {
   }));
 }
 
-const lang = "zh";
+const lang = "en";
 const t = useTranslations(lang);
 
 const { post } = Astro.props;
 const { Content } = await render(post);
 
-// i18n: 双语互链 —— 用 translationKey 查 en 版本，存在则 page-top 渲染互链。
+// i18n: 双语互链 —— 用 translationKey 查 zh 版本，存在则 page-top 渲染互链。
 let translationHref: string | null = null;
 if (post.data.translationKey) {
   const other = (await getCollection("blog")).find(
     (p) =>
       p.data.translationKey === post.data.translationKey &&
-      (p.data.lang ?? "zh") === "en"
+      (p.data.lang ?? "zh") === "zh"
   );
-  if (other) translationHref = localizePath(`/blog/${other.id}`, "en");
+  if (other) translationHref = localizePath(`/blog/${other.id}`, "zh");
 }
 
-// i18n: 边注式第二语言片段（marginalia），按顺序渲染。
 const marginalia = post.data.marginalia ?? [];
 ---
 
@@ -47,10 +46,10 @@ const marginalia = post.data.marginalia ?? [];
 >
   <article class="content-page">
     <div class="page-top">
-      <a href="/blog" class="back-link">{t("back.blog")}</a>
+      <a href="/en/blog" class="back-link">{t("back.blog")}</a>
       <div class="page-top-actions">
         {translationHref && (
-          <a href={translationHref} class="translation-link">{t("post.translation.en")}</a>
+          <a href={translationHref} class="translation-link">{t("post.translation.zh")}</a>
         )}
         <LangToggle />
         <ThemeToggle lang={lang} />
@@ -58,7 +57,7 @@ const marginalia = post.data.marginalia ?? [];
     </div>
 
     <h1>{post.data.title}</h1>
-    <p class="subtitle">{post.data.date?.toLocaleDateString("zh-CN")} {post.data.tags?.map((tag: string) => `#${tag}`).join(" ")}</p>
+    <p class="subtitle">{post.data.date?.toLocaleDateString("en-US")} {post.data.tags?.map((tag: string) => `#${tag}`).join(" ")}</p>
 
     <div class="prose">
       <Content />

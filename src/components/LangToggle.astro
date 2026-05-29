@@ -1,0 +1,51 @@
+---
+// i18n: 语言切换按钮，复用 .theme-toggle 视觉（global.css），与 ThemeToggle 并排。
+// 点击读当前路径切换 /en 前缀并导航到同名逻辑页面 + 写 lang cookie。
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<button class="theme-toggle lang-toggle" id="lang-toggle" aria-label="切换语言">
+  <span class="lang-toggle-text">{t("lang.switch")}</span>
+</button>
+
+<style is:global>
+  .lang-toggle {
+    /* 复用 .theme-toggle 尺寸/交互（见 global.css），仅承载文字 */
+    width: auto;
+    min-width: 1.5em;
+    font-family: "Noto Serif SC", serif;
+  }
+  .lang-toggle-text {
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
+    line-height: 1;
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    // 对齐 theme 脚本：window 守卫 + 事件委托，跨 View Transition 不重复绑定。
+    if (window._langToggleInit) return;
+    window._langToggleInit = true;
+
+    function targetPath(pathname) {
+      // 已在 /en/* → 去前缀回 zh；否则加 /en 前缀（根路径特判）。
+      if (pathname === "/en" || pathname === "/en/") return "/";
+      if (pathname.indexOf("/en/") === 0) return pathname.slice(3);
+      return "/en" + (pathname === "/" ? "" : pathname);
+    }
+
+    document.addEventListener("click", function (e) {
+      var btn = e.target.closest(".lang-toggle");
+      if (!btn) return;
+      var cur = window.location.pathname;
+      var next = cur.indexOf("/en") === 0 ? "zh" : "en";
+      try {
+        document.cookie = "lang=" + next + ";path=/;max-age=31536000;samesite=lax";
+      } catch (err) {}
+      window.location.href = targetPath(cur) + window.location.hash;
+    });
+  })();
+</script>
