@@ -390,6 +390,185 @@ const jsonLd = buildPersonJsonLd(Astro.site ? Astro.site.href : siteMeta.url);
       });
     })();
     </script>
+    <script is:inline>
+      // 「问问关于我」AI 问答交互：全局事件委托（submit on document），跨 View Transition 持久。
+      // 必须放在 Base head 而非组件内——组件 body 里的 inline 脚本在 ClientRouter 切页时不会重跑，
+      // 否则「先刷新首页 → 再进 /about」时 submit 没绑上，表单会原生提交（闪一下、没回复）。
+      // 无 #askme-form 的页面自动空转，与上方 Theme / Vinyl 全局脚本同一套路。
+      (function () {
+        if (window._askMeInit) return;
+        window._askMeInit = true;
+
+        var dismissT = null;
+        var fadeT = null;
+        function clearDismiss(ink) {
+          if (dismissT) {
+            clearTimeout(dismissT);
+            dismissT = null;
+          }
+          if (fadeT) {
+            clearTimeout(fadeT);
+            fadeT = null;
+          }
+          if (ink) ink.classList.remove("is-fading");
+        }
+
+        function nibSrc() {
+          return document.documentElement.getAttribute("data-theme") === "dark"
+            ? "/cursor-feather-dark.svg"
+            : "/cursor-feather-light.svg";
+        }
+
+        function delayFor(ch) {
+          if (ch === "\n") return 130;
+          if ("，。！？、；：,.!?;:".indexOf(ch) !== -1) return 95;
+          return 30;
+        }
+
+        document.addEventListener("submit", function (e) {
+          var form = e.target.closest("#askme-form");
+          if (!form) return;
+          e.preventDefault();
+
+          var input = document.getElementById("askme-input");
+          var ink = document.getElementById("askme-ink");
+          var textEl = document.getElementById("askme-ink-text");
+          var nib = document.getElementById("askme-nib");
+          var btn = form.querySelector(".askme-btn");
+          if (!input || !ink || !textEl || !nib) return;
+
+          var q = (input.value || "").trim();
+          if (!q) return;
+
+          clearDismiss(ink);
+          ink.classList.remove("is-fading");
+          textEl.textContent = "";
+          textEl.classList.remove("askme-error");
+          ink.hidden = false;
+          nib.src = nibSrc();
+          nib.hidden = false;
+          if (btn) btn.disabled = true;
+
+          // 触屏（无 hover）：写在下方、不自动淡出、滚动到答案。桌面行为不变。
+          var noHover = !!(
+            window.matchMedia && window.matchMedia("(hover: none)").matches
+          );
+          if (noHover) {
+            try {
+              ink.scrollIntoView({ behavior: "smooth", block: "center" });
+            } catch (err) {}
+          }
+
+          var queue = [];
+          var streamDone = false;
+          var ticking = false;
+          var finished = false;
+
+          function scheduleDismiss() {
+            clearDismiss(ink);
+            var len = textEl.textContent.length;
+            var hold = Math.min(Math.max(len * 120, 5000), 16000);
+            dismissT = setTimeout(function () {
+              ink.classList.add("is-fading");
+              fadeT = setTimeout(function () {
+                ink.hidden = true;
+                ink.classList.remove("is-fading");
+                textEl.textContent = "";
+              }, 1100);
+            }, hold);
+          }
+          ink.onmouseenter = function () {
+            clearDismiss(ink);
+          };
+          ink.onmouseleave = function () {
+            if (finished) scheduleDismiss();
+          };
+
+          function appendChar(ch) {
+            var span = document.createElement("span");
+            span.className = "ink-char";
+            span.textContent = ch;
+            textEl.appendChild(span);
+          }
+          function lastChar() {
+            var t = textEl.textContent;
+            return t ? t.charAt(t.length - 1) : "";
+          }
+          function tick() {
+            if (queue.length) {
+              appendChar(queue.shift());
+              ink.scrollTop = ink.scrollHeight;
+              setTimeout(tick, delayFor(lastChar()));
+            } else if (!streamDone) {
+              setTimeout(tick, 40);
+            } else {
+              nib.hidden = true;
+              if (btn) btn.disabled = false;
+              ticking = false;
+              finished = true;
+              if (!noHover) scheduleDismiss();
+            }
+          }
+          function startTick() {
+            if (ticking) return;
+            ticking = true;
+            tick();
+          }
+
+          function fail(msg) {
+            nib.hidden = true;
+            textEl.classList.add("askme-error");
+            textEl.textContent = msg || "出错了，稍后再试。";
+            if (btn) btn.disabled = false;
+            finished = true;
+            if (!noHover) scheduleDismiss();
+          }
+
+          fetch("/api/ask", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question: q }),
+          })
+            .then(function (resp) {
+              if (!resp.ok) {
+                return resp
+                  .json()
+                  .catch(function () {
+                    return {};
+                  })
+                  .then(function (d) {
+                    fail(d.error || "出错了，稍后再试。");
+                  });
+              }
+              if (!resp.body || !resp.body.getReader) {
+                return resp.text().then(function (t) {
+                  for (var i = 0; i < t.length; i++) queue.push(t.charAt(i));
+                  streamDone = true;
+                  startTick();
+                });
+              }
+              var reader = resp.body.getReader();
+              var dec = new TextDecoder();
+              startTick();
+              function pump() {
+                return reader.read().then(function (r) {
+                  if (r.done) {
+                    streamDone = true;
+                    return;
+                  }
+                  var chunk = dec.decode(r.value, { stream: true });
+                  for (var i = 0; i < chunk.length; i++) queue.push(chunk.charAt(i));
+                  return pump();
+                });
+              }
+              return pump();
+            })
+            .catch(function () {
+              fail("网络出错了，稍后再试。");
+            });
+        });
+      })();
+    </script>
     {/* 结构化数据：Person JSON-LD。必须用 set:html 避免 HTML 转义；静态 head，不进 is:inline */}
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   </head>
