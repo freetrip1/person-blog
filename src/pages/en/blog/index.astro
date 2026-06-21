@@ -32,7 +32,7 @@ const posts = (await getCollection("blog"))
     <ul class="archive-list">
       {posts.map((post) => (
         <li>
-          <a href={localizePath(`/blog/${post.id}`, lang)} class="archive-item">
+          <a href={localizePath(`/blog/${post.id.replace(/-en$/, "")}`, lang)} class="archive-item">
             <span class="archive-date">
               {post.data.date?.toLocaleDateString("en-US", {
                 year: "numeric",

@@ -23,16 +23,13 @@ const t = useTranslations(lang);
 const { post } = Astro.props;
 const { Content } = await render(post);
 
-// i18n: 双语互链 —— 用 translationKey 查 en 版本，存在则 page-top 渲染互链。
-let translationHref: string | null = null;
-if (post.data.translationKey) {
-  const other = (await getCollection("blog")).find(
-    (p) =>
-      p.data.translationKey === post.data.translationKey &&
-      (p.data.lang ?? "zh") === "en"
-  );
-  if (other) translationHref = localizePath(`/blog/${other.id}`, "en");
-}
+// 语言切换兜底：顶部「あ/A」按钮默认仅按 slug 加 /en 前缀互跳；若本文没有 en
+// 译版，跳到不存在的 /en/blog/<slug> 会 404。故在此显式算出目标——en 译版文件
+// 约定为同名 + `-en`（路由已去后缀）：有译版给文章 URL，无译版回退 en 博客列表。
+const enPost = (await getCollection("blog")).find(
+  (p) => p.data.lang === "en" && p.id === `${post.id}-en`
+);
+const langAltHref = enPost ? localizePath(`/blog/${post.id}`, "en") : "/en/blog";
 
 // i18n: 边注式第二语言片段（marginalia），按顺序渲染。
 const marginalia = post.data.marginalia ?? [];
@@ -49,10 +46,7 @@ const marginalia = post.data.marginalia ?? [];
     <div class="page-top">
       <a href="/blog" class="back-link">{t("back.blog")}</a>
       <div class="page-top-actions">
-        {translationHref && (
-          <a href={translationHref} class="translation-link">{t("post.translation.en")}</a>
-        )}
-        <LangToggle />
+        <LangToggle altHref={langAltHref} />
         <ThemeToggle lang={lang} />
       </div>
     </div>

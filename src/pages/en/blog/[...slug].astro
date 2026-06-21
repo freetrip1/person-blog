@@ -12,7 +12,9 @@ export async function getStaticPaths() {
     (post) => post.data.lang === "en"
   );
   return posts.map((post) => ({
-    params: { slug: post.id },
+    // i18n: en 文件名以 -en 结尾，路由去掉后缀，使 /en/blog/<slug> 与 zh
+    // 的 /blog/<slug> 同名，让顶部「あ/A」语言切换按钮（仅加/去 /en 前缀）能互跳。
+    params: { slug: post.id.replace(/-en$/, "") },
     props: { post },
   }));
 }
@@ -23,16 +25,13 @@ const t = useTranslations(lang);
 const { post } = Astro.props;
 const { Content } = await render(post);
 
-// i18n: 双语互链 —— 用 translationKey 查 zh 版本，存在则 page-top 渲染互链。
-let translationHref: string | null = null;
-if (post.data.translationKey) {
-  const other = (await getCollection("blog")).find(
-    (p) =>
-      p.data.translationKey === post.data.translationKey &&
-      (p.data.lang ?? "zh") === "zh"
-  );
-  if (other) translationHref = localizePath(`/blog/${other.id}`, "zh");
-}
+// 语言切换兜底：见 zh 版注释。en→zh 去掉 `-en` 后缀查 zh 原文：有则给文章 URL，
+// 无则回退 zh 博客列表，避免「あ/A」按钮跳到不存在的 /blog/<slug> 而 404。
+const zhId = post.id.replace(/-en$/, "");
+const zhPost = (await getCollection("blog")).find(
+  (p) => (p.data.lang ?? "zh") === "zh" && p.id === zhId
+);
+const langAltHref = zhPost ? `/blog/${zhId}` : "/blog";
 
 const marginalia = post.data.marginalia ?? [];
 ---
@@ -48,10 +47,7 @@ const marginalia = post.data.marginalia ?? [];
     <div class="page-top">
       <a href="/en/blog" class="back-link">{t("back.blog")}</a>
       <div class="page-top-actions">
-        {translationHref && (
-          <a href={translationHref} class="translation-link">{t("post.translation.zh")}</a>
-        )}
-        <LangToggle />
+        <LangToggle altHref={langAltHref} />
         <ThemeToggle lang={lang} />
       </div>
     </div>

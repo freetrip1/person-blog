@@ -4,9 +4,19 @@
 import { getLangFromUrl, useTranslations } from "../i18n/utils";
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
+
+// altHref：可选的显式切换目标。多数页面（首页/关于/列表等）中英同 slug，
+// 留空走默认「加/去 /en 前缀」逻辑即可；文章详情页若某语言缺译版，由页面
+// 传入显式目标（译版 URL 或该语言博客列表），避免按钮跳到不存在的地址 404。
+const { altHref }: { altHref?: string } = Astro.props;
 ---
 
-<button class="theme-toggle lang-toggle" id="lang-toggle" aria-label="切换语言">
+<button
+  class="theme-toggle lang-toggle"
+  id="lang-toggle"
+  aria-label="切换语言"
+  data-alt-href={altHref}
+>
   <span class="lang-toggle-text">{t("lang.switch")}</span>
 </button>
 
@@ -45,7 +55,10 @@ const t = useTranslations(lang);
       try {
         document.cookie = "lang=" + next + ";path=/;max-age=31536000;samesite=lax";
       } catch (err) {}
-      window.location.href = targetPath(cur) + window.location.hash;
+      // 优先用页面传入的显式目标（详情页缺译版时的兜底），否则走默认前缀切换。
+      var alt = btn.getAttribute("data-alt-href");
+      var dest = alt ? alt : targetPath(cur);
+      window.location.href = dest + window.location.hash;
     });
   })();
 </script>
