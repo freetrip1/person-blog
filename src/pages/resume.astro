@@ -1,0 +1,428 @@
+---
+import Base from "../layouts/Base.astro";
+import ThemeToggle from "../components/ThemeToggle.astro";
+import LangToggle from "../components/LangToggle.astro";
+import BottomNav from "../components/BottomNav.astro";
+import { useTranslations } from "../i18n/utils";
+
+const lang = "zh" as const;
+const t = useTranslations(lang);
+
+const pdfPath = "/resume.pdf";
+
+// 简历内容内联于此页（不公开、noindex、仅直链 /resume 访问）。
+// 与 public/resume.pdf 同源——改简历时两处都要更新。
+const advantages = [
+  {
+    lead: "能独立把想法做成产品",
+    body: "独立完成 8 款 AI 产品 / 工具的 0→1（移动端、桌面端、Agent、语音），从用户痛点出发定义需求、做技术选型与功能取舍、再到上线迭代全流程亲力亲为，具备真实的产品判断与端到端交付能力。",
+  },
+  {
+    lead: "技术 + 量化复合背景，能与研发 / 数据团队同频",
+    body: "计算机科班，熟练 Python（Pandas、NumPy）、C、C++，能读码、复现报错、查证官方文档，从代码与逻辑层面判断技术方案可行性与成本；具备「多维度交叉验证、警惕过拟合」的量化思维，能把产品需求翻译成研发可执行的口径。",
+  },
+  {
+    lead: "懂大模型能力边界与评测体系",
+    body: "覆盖多模态理解、端到端实时语音、RAG、Function Calling、Agent 编排、事实性 / 忠实度评测等环节，能定义评测维度与验收标准，判断模型「能做什么、会在哪一步失败」，为功能边界与迭代优先级提供依据。",
+  },
+  {
+    lead: "数据驱动 + 横向竞品视角",
+    body: "以可量化指标（延迟、照准率、完成率）驱动产品迭代；横向比对 Claude、豆包、GPT、Gemini、Kimi、智谱 GLM 等模型表现，作为选型与竞品分析基准。",
+  },
+];
+
+const jobs = [
+  {
+    company: "LibertyLink Technologies",
+    role: "AI 产品经理",
+    date: "2025.05 – 2026.05",
+    background:
+      "LibertyLink 内容团队承担大模型训练数据的生产工作（代码安全 / 漏洞标注、SFT 代码讲解数据等），长期面临重复机械工作量大、人效受限、返工率高（初期 22%）、质量靠事后返工的瓶颈。随着大模型工具调用能力成熟，团队希望用 AI Agent 接管高频、耗时、易错的环节，把人力释放到高价值判断上。本项目即从一线工作流出发，定位刚需场景，设计「人机协作 + 可回退」的 Agent 工具并推动其在内容团队全面落地，形成「痛点 → 需求 → 上线 → 度量 → 再迭代」的闭环。",
+    duties: [
+      "从一线痛点定义产品：长期跟内容团队同岗工作，系统梳理其工作流，定位最高频、最耗时、最易错的环节；判断哪些场景「大模型能解且 ROI 划算」，将 Agent 能力收敛到刚需场景，产出需求文档，明确功能边界（做什么 / 不做什么）与优先级排序。",
+      "设计 AI 不确定性下的人机协作流程：针对 Agent 可能「理解偏、执行错、误改数据」的固有风险，设计结果可预览 → 人工确认后再落地 → 出错可一键回退的协作机制，并对高风险操作保留人工接管，让内容人员「敢用、放心用」，而非因不信任而弃用。",
+      "技术方案对齐（定方向，不写代码）：与算法 / 工程团队对齐技术路线——工具集如何设计、单 Agent 还是多 Agent、上下文如何管理、选用哪个模型，在效果 / 成本 / 响应延迟之间做权衡取舍；参与定义 Agent 的能力评测口径（工具调用准确率、任务完成率）。",
+      "推动落地与采纳（项目命脉）：组织小范围灰度试用，用早期提效数据建立团队信心；针对初期「不信任、不会用」的阻力，通过培训、使用文档、可回退设计降低上手门槛，逐步把工具从「少数人尝鲜」推到「全团队日常使用」，持续提升内部采纳率。",
+      "数据驱动迭代：定义并跟踪核心指标（采纳率、人均产能、单任务处理时长、返工率），持续收集使用反馈、归因 badcase，转化为下一轮迭代需求，形成「痛点 → 需求 → 上线 → 度量 → 再迭代」的闭环。",
+      "价值证明与影响扩散：用提效数据向上汇报、证明工具价值并争取资源；沉淀使用规范与最佳实践，推动 Agent 能力复用到更多相邻场景。",
+    ],
+    results: [
+      "推动 Agent 在内容团队全面落地，覆盖 6 名内容人员日常使用，内部采纳率达 80%，从上线初期少数人试用发展为团队标准工作方式。参与四层 badcase 归因 + 三级质检体系建设，期间团队返工率由 22% 降至 10%，质量由「事后返工」转为「事前预防」。",
+      "由 Agent 承接重复性、机械性工作，人均产能提升 25%、单任务处理时长下降 30%，显著释放人力投入到高价值判断环节。",
+      "主导定义 Agent 能力评测口径并驱动迭代，工具调用准确率达 92%、任务完成率达 85%，保障自动化结果质量可控、可信赖。代码安全 / 漏洞标注风险识别召回率 ≥ 98%；SFT 代码讲解数据采用率约 78%。",
+    ],
+  },
+  {
+    company: "世坤量化咨询（WorldQuant）",
+    role: "AI 产品经理",
+    date: "2024.04 – 2025.04",
+    background:
+      "WorldQuant BRAIN 是量化 Alpha 因子研究平台，研究员需走完「找数据 / 算子 → 写因子 → 回测 → 看 PnL / 相关性 → 提交检查 → 正式提交」全流程。痛点是操作链路长、重复度高、依赖脚本能力、试错成本高。借助大模型工具调用（Function Calling / MCP），本项目把平台能力封装成 6 大模块、30+ 工具，构建 AI 量化研究 Agent，让研究员用自然语言驱动整个研究闭环——「会描述需求」即可完成原本「要会写脚本」的工作。",
+    duties: [
+      "需求拆解与产品定义：调研量化研究员在 BRAIN 平台的真实工作流（数据字段检索、表达式回测、PnL / 相关性分析、提交前检查），把高频、重复、易错的环节梳理成可被 AI Agent 接管的工具能力。",
+      "工具能力设计（Tool / Function 设计）：定义 30+ 个工具接口的输入输出 schema 与边界，按「认证 / 回测 / Alpha 分析 / 提交 / 竞赛 / 文档社区」六大模块分层，平衡「工具粒度」与「大模型调用准确率」——粒度太粗模型用不对，太细则调用链过长。",
+      "Agent 工作流编排：设计典型任务的多步调用链路（如「登录 → 拉算子和数据字段 → 批量回测 → 看报错 → 相关性筛选 → 提交前检查」），明确每一步的前置依赖和失败兜底。",
+      "Prompt 与调用准确率优化：针对模型「该调哪个工具、参数填错、漏掉前置认证」等 Badcase，迭代工具描述（description）和调用示例，把工具误调用率压下来。",
+      "效果评估与验收：定义评估标准（任务完成率、工具调用准确率、单任务端到端耗时），组织 Badcase 复盘，推动工具描述和编排逻辑迭代。",
+    ],
+    results: [
+      "覆盖完整研究闭环：交付 6 大模块、30+ 工具能力，覆盖从数据 / 算子检索到因子提交的全流程，研究员可用自然语言完成原本需手动操作和写脚本的工作。",
+      "效率提升：单个因子从「找数据 → 回测 → 看相关性」的端到端耗时由 5 分钟降至 1 分钟，重复性操作（批量回测、相关性筛查）由人工转为 Agent 自动执行。",
+      "调用准确率：通过工具描述与调用示例迭代，工具调用准确率从 60% 提升至 90%。",
+      "降低使用门槛：非脚本背景的研究员也能通过对话完成回测与提交前检查，把会用平台的人群从「会写脚本」扩大到「会描述策略需求」。",
+    ],
+  },
+];
+---
+
+<Base title="简历" description="秦思源 · AI 产品 — 简历" lang={lang} noindex={true}>
+  <article class="content-page">
+    <div class="page-top">
+      <a href="/" class="back-link">{t("back")}</a>
+      <div class="page-top-actions">
+        <LangToggle />
+        <ThemeToggle lang={lang} />
+      </div>
+    </div>
+
+    <h1>简历</h1>
+    <p class="subtitle">秦思源 · AI 产品</p>
+
+    <div class="resume-actions">
+      <a href={pdfPath} download class="resume-btn resume-btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        <span>下载 PDF</span>
+      </a>
+      <a href={pdfPath} target="_blank" rel="noopener" class="resume-btn resume-btn-ghost">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+          <polyline points="15 3 21 3 21 9" />
+          <line x1="10" y1="14" x2="21" y2="3" />
+        </svg>
+        <span>查看 PDF 原件</span>
+      </a>
+    </div>
+
+    <div class="resume-doc">
+      <header class="r-head">
+        <h2 class="r-name">秦思源</h2>
+        <p class="r-meta">
+          <a href="tel:19525854997" class="r-link">19525854997</a>
+          <span class="r-dot" aria-hidden="true">·</span>
+          <a href="mailto:qsy@bysiyuan.com" class="r-link">qsy@bysiyuan.com</a>
+          <span class="r-dot" aria-hidden="true">·</span>
+          <span>本科 · 计算机科学与技术</span>
+        </p>
+      </header>
+
+      <section class="r-section">
+        <h3 class="r-label">个人优势</h3>
+        <ul class="r-adv">
+          {advantages.map((a) => (
+            <li><strong>{a.lead}：</strong>{a.body}</li>
+          ))}
+        </ul>
+      </section>
+
+      <section class="r-section">
+        <h3 class="r-label">工作经历</h3>
+        {jobs.map((job) => (
+          <div class="r-job">
+            <div class="r-job-head">
+              <span class="r-company">{job.company}</span>
+              <span class="r-role">{job.role}</span>
+              <span class="r-date">{job.date}</span>
+            </div>
+            <p class="r-bg"><span class="r-tag">背景</span>{job.background}</p>
+            <h4 class="r-sub">内容</h4>
+            <ol class="r-list">
+              {job.duties.map((d) => <li>{d}</li>)}
+            </ol>
+            <h4 class="r-sub">业绩</h4>
+            <ul class="r-list r-achv">
+              {job.results.map((r) => <li>{r}</li>)}
+            </ul>
+          </div>
+        ))}
+      </section>
+    </div>
+
+    <BottomNav lang={lang} />
+  </article>
+</Base>
+
+<style>
+  .page-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .resume-actions {
+    display: flex;
+    gap: 0.8rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 2.5rem;
+  }
+
+  .resume-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    font-family: "Noto Sans SC", system-ui, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 0.6em 1.4em;
+    border-radius: 4px;
+    border: 1.5px solid var(--accent);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .resume-btn svg {
+    width: 1.1em;
+    height: 1.1em;
+  }
+
+  .resume-btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .resume-btn-primary:hover {
+    background: transparent;
+    color: var(--accent);
+  }
+
+  .resume-btn-ghost {
+    background: transparent;
+    color: var(--accent);
+  }
+
+  .resume-btn-ghost:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  /* ---- 渲染版简历 ---- */
+  .resume-doc {
+    text-align: left;
+    max-width: 46rem;
+    margin: 0 auto;
+  }
+
+  .r-head {
+    padding-bottom: 1.2rem;
+    border-bottom: 2px solid var(--dots);
+    margin-bottom: 0.5rem;
+  }
+
+  .r-name {
+    font-family: "Noto Serif SC", serif;
+    font-size: 1.9rem;
+    font-weight: 700;
+    margin: 0 0 0.4rem;
+    letter-spacing: 0.04em;
+  }
+
+  .r-meta {
+    font-size: 0.9rem;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5em;
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .r-link {
+    color: var(--muted);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .r-link:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .r-dot {
+    opacity: 0.4;
+  }
+
+  .r-section {
+    margin-top: 2.4rem;
+  }
+
+  .r-label {
+    font-family: "Noto Serif SC", serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 0 0 1.1rem;
+    padding-left: 0.6rem;
+    border-left: 3px solid var(--accent);
+    line-height: 1.2;
+  }
+
+  .r-adv {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .r-adv li {
+    position: relative;
+    padding-left: 1.1rem;
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--fg);
+  }
+
+  .r-adv li::before {
+    content: "❧";
+    position: absolute;
+    left: 0;
+    top: 0.05em;
+    color: var(--accent);
+    opacity: 0.6;
+    font-size: 0.85em;
+  }
+
+  .r-adv strong {
+    color: var(--fg);
+    font-weight: 600;
+  }
+
+  .r-job {
+    margin-bottom: 2.4rem;
+  }
+
+  .r-job:last-child {
+    margin-bottom: 0;
+  }
+
+  .r-job-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.2rem 0.7rem;
+    margin-bottom: 0.7rem;
+  }
+
+  .r-company {
+    font-family: "Noto Serif SC", serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--fg);
+  }
+
+  .r-role {
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .r-date {
+    margin-left: auto;
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+
+  .r-bg {
+    font-size: 0.9rem;
+    line-height: 1.75;
+    color: var(--muted);
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.9rem 1.1rem;
+    margin: 0 0 1.2rem;
+  }
+
+  .r-tag {
+    display: inline-block;
+    font-family: "Noto Serif SC", serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-right: 0.6em;
+    vertical-align: 0.05em;
+  }
+
+  .r-sub {
+    font-family: "Noto Serif SC", serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--fg);
+    margin: 1.2rem 0 0.6rem;
+  }
+
+  .r-list {
+    margin: 0;
+    padding-left: 1.3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .r-list li {
+    font-size: 0.92rem;
+    line-height: 1.75;
+    color: var(--fg);
+    padding-left: 0.2rem;
+  }
+
+  .r-list.r-achv {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .r-achv li {
+    position: relative;
+    padding-left: 1.2rem;
+    color: var(--muted);
+  }
+
+  .r-achv li::before {
+    content: "";
+    position: absolute;
+    left: 0.1rem;
+    top: 0.7em;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.7;
+  }
+
+  @media (max-width: 480px) {
+    .resume-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .resume-btn {
+      justify-content: center;
+    }
+    .r-name {
+      font-size: 1.6rem;
+    }
+    .r-date {
+      margin-left: 0;
+      flex-basis: 100%;
+    }
+  }
+</style>

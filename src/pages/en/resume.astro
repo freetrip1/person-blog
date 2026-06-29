@@ -1,0 +1,428 @@
+---
+import Base from "../../layouts/Base.astro";
+import ThemeToggle from "../../components/ThemeToggle.astro";
+import LangToggle from "../../components/LangToggle.astro";
+import BottomNav from "../../components/BottomNav.astro";
+import { useTranslations } from "../../i18n/utils";
+
+const lang = "en" as const;
+const t = useTranslations(lang);
+
+const pdfPath = "/resume.pdf";
+
+// Inlined resume content (unlisted, noindex, direct link /en/resume only).
+// Mirrors public/resume.pdf — keep both in sync when editing.
+const advantages = [
+  {
+    lead: "Can take an idea all the way to a shipped product",
+    body: "Independently delivered the 0→1 of 8 AI products / tools (mobile, desktop, Agent, voice) — defining needs from real user pain, making tech and feature trade-offs, then shipping and iterating end to end. Real product judgment and full-cycle delivery.",
+  },
+  {
+    lead: "Engineering + quant background — speaks the same language as dev / data teams",
+    body: "CS major, fluent in Python (Pandas, NumPy), C, C++; can read code, reproduce errors, and verify against official docs to judge a solution's feasibility and cost. Brings a quant mindset of cross-validation and guarding against overfitting, and translates product needs into specs engineering can execute.",
+  },
+  {
+    lead: "Understands model capability boundaries and evaluation",
+    body: "Covers multimodal understanding, end-to-end real-time voice, RAG, Function Calling, Agent orchestration, and factuality / faithfulness evaluation. Defines eval dimensions and acceptance criteria, and judges what a model can do and where it will fail — grounding feature scope and iteration priorities.",
+  },
+  {
+    lead: "Data-driven, with a comparative competitive lens",
+    body: "Drives iteration with measurable metrics (latency, accuracy, completion rate); benchmarks across Claude, Doubao, GPT, Gemini, Kimi, Zhipu GLM and others as the basis for model selection and competitive analysis.",
+  },
+];
+
+const jobs = [
+  {
+    company: "LibertyLink Technologies",
+    role: "AI Product Manager",
+    date: "May 2025 – May 2026",
+    background:
+      "LibertyLink's content team produces LLM training data (code-security / vulnerability annotation, SFT code-explanation data, etc.), long bottlenecked by heavy repetitive work, limited per-person output, a high rework rate (22% early on), and quality that relied on fixing things after the fact. As LLM tool-calling matured, the team wanted AI Agents to take over high-frequency, time-consuming, error-prone steps and free people for high-value judgment. This project started from the frontline workflow, identified must-have scenarios, designed a \"human-in-the-loop + reversible\" Agent tool, and drove its full adoption across the content team — forming a closed loop of pain → need → ship → measure → iterate.",
+    duties: [
+      "Defined the product from frontline pain: worked the same role alongside the content team, mapped their workflow, and pinpointed the most frequent, time-consuming, error-prone steps. Judged which scenarios the model could solve at worthwhile ROI, converged Agent capability to genuine needs, and produced requirement docs with clear scope (in / out) and priorities.",
+      "Designed a human-in-the-loop flow under AI uncertainty: for the inherent risk of an Agent misreading, mis-executing, or wrongly editing data, designed preview → human confirm → commit, with one-click rollback on error and human takeover for high-risk operations — so content staff dared to use it rather than abandoning it out of distrust.",
+      "Aligned the technical direction (set direction, didn't write code): worked with algorithm / engineering on the toolset design, single- vs multi-Agent, context management, and model choice — trading off quality, cost, and latency; helped define the Agent's eval metrics (tool-call accuracy, task completion rate).",
+      "Drove adoption (the project's lifeline): ran small-scale gated trials and used early efficiency data to build confidence; against initial distrust and unfamiliarity, lowered the barrier with training, docs, and reversible design, moving the tool from a few early users to everyday team-wide use and steadily raising internal adoption.",
+      "Iterated on data: defined and tracked core metrics (adoption, per-person output, time per task, rework rate), continuously gathered feedback, attributed badcases, and turned them into the next iteration — closing the pain → need → ship → measure → iterate loop.",
+      "Proved value and spread impact: reported efficiency gains upward to justify the tool and win resources; distilled usage norms and best practices, extending the Agent's capability to adjacent scenarios.",
+    ],
+    results: [
+      "Drove full team-wide adoption: covered 6 content staff in daily use at 80% internal adoption, growing from a few early users into the team's standard way of working. Helped build a four-layer badcase attribution + three-tier QA system, cutting team rework from 22% to 10% and shifting quality from after-the-fact fixes to upfront prevention.",
+      "By handing repetitive, mechanical work to the Agent, raised per-person output 25% and cut time per task 30%, freeing people for high-value judgment.",
+      "Led the definition of the Agent's eval metrics and drove iteration: tool-call accuracy 92%, task completion 85%, keeping automated output controllable and trustworthy. Code-security / vulnerability risk recall ≥ 98%; SFT code-explanation data adoption ~78%.",
+    ],
+  },
+  {
+    company: "WorldQuant",
+    role: "AI Product Manager",
+    date: "Apr 2024 – Apr 2025",
+    background:
+      "WorldQuant BRAIN is a quant Alpha-factor research platform where researchers run a full pipeline: find data/operators → write factors → backtest → review PnL/correlation → pre-submission checks → final submit. The pain: long operation chains, high repetition, dependence on scripting skill, and costly trial-and-error. Using LLM tool-calling (Function Calling / MCP), this project wrapped the platform's capabilities into 6 modules and 30+ tools to build an AI quant-research Agent — letting researchers drive the whole loop in natural language, so \"being able to describe the need\" replaced \"having to write scripts.\"",
+    duties: [
+      "Requirement breakdown and product definition: studied researchers' real BRAIN workflow (datafield search, expression backtest, PnL / correlation analysis, pre-submission checks) and distilled the frequent, repetitive, error-prone steps into tool capabilities an AI Agent could take over.",
+      "Tool capability design (Tool / Function design): defined input/output schemas and boundaries for 30+ tool interfaces, layered into six modules (auth / backtest / Alpha analysis / submission / competition / docs & community), balancing tool granularity against model call accuracy — too coarse and the model misuses it, too fine and the call chain gets too long.",
+      "Agent workflow orchestration: designed multi-step call chains for typical tasks (e.g. log in → pull operators and datafields → batch backtest → read errors → correlation filter → pre-submission check), specifying each step's prerequisites and failure fallbacks.",
+      "Prompt and call-accuracy optimization: for badcases like wrong tool choice, mis-filled params, or skipped prerequisite auth, iterated tool descriptions and call examples to drive down misuse.",
+      "Evaluation and acceptance: defined the eval standard (task completion, tool-call accuracy, end-to-end time per task), ran badcase reviews, and drove iteration of tool descriptions and orchestration logic.",
+    ],
+    results: [
+      "Covered the full research loop: delivered 6 modules and 30+ tool capabilities spanning data/operator search to factor submission, letting researchers do in natural language what previously needed manual steps and scripting.",
+      "Efficiency: end-to-end time for a single factor (find data → backtest → check correlation) dropped from 5 minutes to 1 minute, with repetitive operations (batch backtest, correlation screening) shifted from manual to Agent-automated.",
+      "Call accuracy: through iterating tool descriptions and call examples, tool-call accuracy rose from 60% to 90%.",
+      "Lowered the barrier: researchers without a scripting background could backtest and run pre-submission checks via conversation, widening the capable user base from those who can write scripts to those who can describe a strategy.",
+    ],
+  },
+];
+---
+
+<Base title="Resume" description="Qin Siyuan · AI Product — Resume" lang={lang} noindex={true}>
+  <article class="content-page">
+    <div class="page-top">
+      <a href="/en" class="back-link">{t("back")}</a>
+      <div class="page-top-actions">
+        <LangToggle />
+        <ThemeToggle lang={lang} />
+      </div>
+    </div>
+
+    <h1>Resume</h1>
+    <p class="subtitle">Qin Siyuan · AI Product</p>
+
+    <div class="resume-actions">
+      <a href={pdfPath} download class="resume-btn resume-btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        <span>Download PDF</span>
+      </a>
+      <a href={pdfPath} target="_blank" rel="noopener" class="resume-btn resume-btn-ghost">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+          <polyline points="15 3 21 3 21 9" />
+          <line x1="10" y1="14" x2="21" y2="3" />
+        </svg>
+        <span>View original PDF</span>
+      </a>
+    </div>
+
+    <div class="resume-doc">
+      <header class="r-head">
+        <h2 class="r-name">Qin Siyuan</h2>
+        <p class="r-meta">
+          <a href="tel:19525854997" class="r-link">19525854997</a>
+          <span class="r-dot" aria-hidden="true">·</span>
+          <a href="mailto:qsy@bysiyuan.com" class="r-link">qsy@bysiyuan.com</a>
+          <span class="r-dot" aria-hidden="true">·</span>
+          <span>B.S. · Computer Science &amp; Technology</span>
+        </p>
+      </header>
+
+      <section class="r-section">
+        <h3 class="r-label">Strengths</h3>
+        <ul class="r-adv">
+          {advantages.map((a) => (
+            <li><strong>{a.lead}.</strong> {a.body}</li>
+          ))}
+        </ul>
+      </section>
+
+      <section class="r-section">
+        <h3 class="r-label">Experience</h3>
+        {jobs.map((job) => (
+          <div class="r-job">
+            <div class="r-job-head">
+              <span class="r-company">{job.company}</span>
+              <span class="r-role">{job.role}</span>
+              <span class="r-date">{job.date}</span>
+            </div>
+            <p class="r-bg"><span class="r-tag">CONTEXT</span>{job.background}</p>
+            <h4 class="r-sub">What I did</h4>
+            <ol class="r-list">
+              {job.duties.map((d) => <li>{d}</li>)}
+            </ol>
+            <h4 class="r-sub">Results</h4>
+            <ul class="r-list r-achv">
+              {job.results.map((r) => <li>{r}</li>)}
+            </ul>
+          </div>
+        ))}
+      </section>
+    </div>
+
+    <BottomNav lang={lang} />
+  </article>
+</Base>
+
+<style>
+  .page-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .resume-actions {
+    display: flex;
+    gap: 0.8rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 2.5rem;
+  }
+
+  .resume-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    font-family: "Noto Sans SC", system-ui, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 0.6em 1.4em;
+    border-radius: 4px;
+    border: 1.5px solid var(--accent);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .resume-btn svg {
+    width: 1.1em;
+    height: 1.1em;
+  }
+
+  .resume-btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .resume-btn-primary:hover {
+    background: transparent;
+    color: var(--accent);
+  }
+
+  .resume-btn-ghost {
+    background: transparent;
+    color: var(--accent);
+  }
+
+  .resume-btn-ghost:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  /* ---- rendered resume ---- */
+  .resume-doc {
+    text-align: left;
+    max-width: 46rem;
+    margin: 0 auto;
+  }
+
+  .r-head {
+    padding-bottom: 1.2rem;
+    border-bottom: 2px solid var(--dots);
+    margin-bottom: 0.5rem;
+  }
+
+  .r-name {
+    font-family: "Noto Serif SC", serif;
+    font-size: 1.9rem;
+    font-weight: 700;
+    margin: 0 0 0.4rem;
+    letter-spacing: 0.04em;
+  }
+
+  .r-meta {
+    font-size: 0.9rem;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5em;
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .r-link {
+    color: var(--muted);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .r-link:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .r-dot {
+    opacity: 0.4;
+  }
+
+  .r-section {
+    margin-top: 2.4rem;
+  }
+
+  .r-label {
+    font-family: "Noto Serif SC", serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 0 0 1.1rem;
+    padding-left: 0.6rem;
+    border-left: 3px solid var(--accent);
+    line-height: 1.2;
+  }
+
+  .r-adv {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .r-adv li {
+    position: relative;
+    padding-left: 1.1rem;
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--fg);
+  }
+
+  .r-adv li::before {
+    content: "❧";
+    position: absolute;
+    left: 0;
+    top: 0.05em;
+    color: var(--accent);
+    opacity: 0.6;
+    font-size: 0.85em;
+  }
+
+  .r-adv strong {
+    color: var(--fg);
+    font-weight: 600;
+  }
+
+  .r-job {
+    margin-bottom: 2.4rem;
+  }
+
+  .r-job:last-child {
+    margin-bottom: 0;
+  }
+
+  .r-job-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.2rem 0.7rem;
+    margin-bottom: 0.7rem;
+  }
+
+  .r-company {
+    font-family: "Noto Serif SC", serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--fg);
+  }
+
+  .r-role {
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .r-date {
+    margin-left: auto;
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+
+  .r-bg {
+    font-size: 0.9rem;
+    line-height: 1.75;
+    color: var(--muted);
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.9rem 1.1rem;
+    margin: 0 0 1.2rem;
+  }
+
+  .r-tag {
+    display: inline-block;
+    font-family: "Noto Serif SC", serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-right: 0.6em;
+    vertical-align: 0.05em;
+  }
+
+  .r-sub {
+    font-family: "Noto Serif SC", serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--fg);
+    margin: 1.2rem 0 0.6rem;
+  }
+
+  .r-list {
+    margin: 0;
+    padding-left: 1.3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .r-list li {
+    font-size: 0.92rem;
+    line-height: 1.75;
+    color: var(--fg);
+    padding-left: 0.2rem;
+  }
+
+  .r-list.r-achv {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .r-achv li {
+    position: relative;
+    padding-left: 1.2rem;
+    color: var(--muted);
+  }
+
+  .r-achv li::before {
+    content: "";
+    position: absolute;
+    left: 0.1rem;
+    top: 0.7em;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.7;
+  }
+
+  @media (max-width: 480px) {
+    .resume-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .resume-btn {
+      justify-content: center;
+    }
+    .r-name {
+      font-size: 1.6rem;
+    }
+    .r-date {
+      margin-left: 0;
+      flex-basis: 100%;
+    }
+  }
+</style>
