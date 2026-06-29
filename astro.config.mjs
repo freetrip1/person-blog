@@ -7,8 +7,8 @@ import vercel from '@astrojs/vercel';
 export default defineConfig({
   // SEO / OG / canonical 的绝对 URL 唯一来源。
   // sitemap、RSS（context.site）、canonical 均依赖它，缺它则全部不正确。
-  // TODO(站主拍板): 确认生产域名，须与 src/data/siteMeta.ts 的 siteMeta.url 保持一致。
-  site: 'https://person-blog.vercel.app',
+  // 生产域名：freetrip.vercel.app（已验证线上可访问；project 默认域 person-blog.vercel.app 返回 404）。须与 src/data/siteMeta.ts 的 siteMeta.url 保持一致。
+  site: 'https://freetrip.vercel.app',
   // i18n：zh 留根路径（/about…），en 走 /en/*；两套都是真实静态路由可抓取。
   // prefixDefaultLocale:false 让默认 locale(zh) 不带前缀；en 页面落 src/pages/en/*。
   i18n: {

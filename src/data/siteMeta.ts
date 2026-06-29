@@ -45,8 +45,8 @@ export interface SiteMeta {
 export const siteMeta: SiteMeta = {
   siteName: "Freetrip",
   brandName: "夜 / siyuan",
-  // TODO(站主拍板): 确认生产域名。当前用 Vercel 默认占位，确定后须与 astro.config.mjs 的 site 同步修改。
-  url: "https://person-blog.vercel.app",
+  // 生产域名：Vercel 别名 freetrip.vercel.app（已验证线上可访问；project 默认域 person-blog.vercel.app 返回 404）。须与 astro.config.mjs 的 site 保持一致。
+  url: "https://freetrip.vercel.app",
   description: "夜 / siyuan 的个人博客 — AI 训练师、量化研究员、Flutter 开发者，也写字。",
   // TODO(站主拍板): 确认 CN / EN spine 长标语最终文案。
   spineTaglineCN: "训练模型，研究因子，写代码，也写字。",
